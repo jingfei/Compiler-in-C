@@ -24,6 +24,7 @@ class Compiler{
 	protected:
 		map <string,Grammar> Gram;
 		map <string,eachTok> Toks;
+		map <string, map<string, vector<string> > > LLtable;
 	public:
 		void input(){
 			/* first */
@@ -31,7 +32,7 @@ class Compiler{
 			tmp.name="S";
 			vector <string> inFirst;
 			inFirst.push_back("Program");
-			inFirst.push_back("$");
+			//inFirst.push_back("$");
 			tmp.content.push_back(inFirst);
 			Gram[tmp.name]=tmp;
 			struct eachTok tmpTok;
@@ -73,6 +74,7 @@ class Compiler{
 				}
 			}
 			Gram[tmp.name]=tmp;
+			Toks["S"].isTerm=false;
 		}
 };
 

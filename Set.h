@@ -8,8 +8,11 @@ class Set: public Compiler{
 		void findFirst();
 		void printFirst();
 		void findFollow();
+		void printFollow();
+		void printLLtable();
 	private:
 		void getFirst(struct eachTok &);
+		void insertLLtable(string row,string col,string head);
 };
 
 #endif
