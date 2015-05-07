@@ -9,17 +9,14 @@ using namespace std;
 
 void Set::getFirst(struct eachTok &tmpTok){
 	if(tmpTok.isTerm) return;
-	vector <string>::iterator it;
+	set <string>::iterator it;
 	for(it=tmpTok.First.begin(); it!=tmpTok.First.end(); ++it){
 		/* if the child is nonterminal */
 		if( !(Toks[*it].isTerm) ){
 			getFirst(Toks[*it]);
 			/* insert nonterminals & erase this terminal */
-			int loc=it-tmpTok.First.begin();
-			int loc2=Toks[*it].First.size();
-			tmpTok.First.insert(it,Toks[*it].First.begin(),Toks[*it].First.end());
-			it=tmpTok.First.begin()+loc+loc2;
-			tmpTok.First.erase(it--);
+			tmpTok.First.insert(Toks[*it].First.begin(),Toks[*it].First.end());
+			tmpTok.First.erase(it++);
 		}
 	}
 }
@@ -27,10 +24,10 @@ void Set::getFirst(struct eachTok &tmpTok){
 void Set::findFirst(){
 	/* add all First() including nonterminal */
 	for(auto& i : Toks){
-		if(i.second.isTerm) i.second.First.push_back(i.first);
+		if(i.second.isTerm) i.second.First.insert(i.first);
 		else
 			for(auto j : Gram[i.first].content){
-				i.second.First.push_back(j[0]);
+				i.second.First.insert(j[0]);
 			}
 	}
 	/* change nonterminal to terminal using recursive */
@@ -51,9 +48,9 @@ void Set::printFirst(){
 		printf("\n");
 	}
 }
-
+/*
 void Set::findFollow(){
-	Toks["S"].Follow.push_back("$");
+	Toks["S"].Follow.insert("$");
 	for(auto i : Gram){
 		for(int j=0; j<i.content.size(); ++j)
 			for(int k=1; k<i.content[j].size(); ++k){
@@ -65,5 +62,5 @@ void Set::findFollow(){
 			}
 	}
 }
-
+*/
 

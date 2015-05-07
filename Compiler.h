@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <map>
+#include <set>
 #include <vector>
 #include <cstring>
 #include <iostream>
@@ -17,7 +18,7 @@ class Compiler{
 	struct eachTok{
 		string name;
 		bool isTerm;
-		vector <string> First;
+		set <string> First;
 		set <string> Follow;
 	};
 	protected:
