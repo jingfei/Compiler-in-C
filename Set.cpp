@@ -55,20 +55,20 @@ void Set::findFirst(){
 		getFirst(i.second);
 	}
 	/* step 2 & 3 */
-	for(auto& i : Toks){
-		if(i.second.isTerm) continue;
-		else  
-			for(auto j : Gram[i.first].content){
-				string last=j[j.size()-1];
-				for(auto k : j){
-					if(k==last) 
-						Toks[i.first].First.insert(Toks[k].First.begin(), 
-													Toks[k].First.end() );
-					if(k!="epsilon") break;
-					Toks[i.first].First.insert("epsilon");
-				}
-			}
-	}
+//	for(auto& i : Toks){
+//		if(i.second.isTerm) continue;
+//		else  
+//			for(auto j : Gram[i.first].content){
+//				string last=j[j.size()-1];
+//				for(auto k : j){
+//					if(k==last) 
+//						Toks[i.first].First.insert(Toks[k].First.begin(), 
+//													Toks[k].First.end() );
+//					if(k!="epsilon" && !Toks[k].isTerm) break;
+//					Toks[i.first].First.insert("epsilon");
+//				}
+//			}
+//	}
 }
 
 void Set::printFirst(){
