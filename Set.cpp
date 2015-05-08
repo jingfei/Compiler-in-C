@@ -55,6 +55,8 @@ void Set::findFirst(){
 		getFirst(i.second);
 	}
 	/* step 2 & 3 */
+	Toks["S"].First.insert("$");
+	Toks["S"].First.erase("epsilon");
 //	for(auto& i : Toks){
 //		if(i.second.isTerm) continue;
 //		else  
@@ -64,7 +66,8 @@ void Set::findFirst(){
 //					if(k==last) 
 //						Toks[i.first].First.insert(Toks[k].First.begin(), 
 //													Toks[k].First.end() );
-//					if(k!="epsilon" && !Toks[k].isTerm) break;
+//					set<string>::iterator it=Toks[k].First.find("epsilon");
+//					if(it==Toks[k].First.end() && !Toks[k].isTerm) break;
 //					Toks[i.first].First.insert("epsilon");
 //				}
 //			}
@@ -132,6 +135,9 @@ void Set::findFollow(){
 				LLtable[i.first][j].push_back("epsilon");
 		}
 	}
+	LLtable["Program"]["$"].push_back("DeclList");
+	LLtable["S"]["$"].push_back("Program");
+	LLtable["S"]["$"].push_back("$");
 }
 
 void Set::printFollow(){
