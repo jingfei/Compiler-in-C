@@ -1,7 +1,6 @@
 #include <iostream>
 #include "Set.h"
 #include "Lexer.h"
-#include "Tree.h"
 using namespace std;
 
 

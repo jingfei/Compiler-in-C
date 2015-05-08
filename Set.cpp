@@ -138,6 +138,14 @@ void Set::findFollow(){
 	LLtable["Program"]["$"].push_back("DeclList");
 	LLtable["S"]["$"].push_back("Program");
 	LLtable["S"]["$"].push_back("$");
+	LLtable["ExprIdTail"][")"].push_back("Expr'");
+	LLtable["ExprIdTail"][","].push_back("Expr'");
+	LLtable["ExprIdTail"][";"].push_back("Expr'");
+	LLtable["ExprIdTail"]["]"].push_back("Expr'");
+	LLtable["ExprArrayTail"][")"].push_back("Expr'");
+	LLtable["ExprArrayTail"][","].push_back("Expr'");
+	LLtable["ExprArrayTail"][";"].push_back("Expr'");
+	LLtable["ExprArrayTail"]["]"].push_back("Expr'");
 }
 
 void Set::printFollow(){
