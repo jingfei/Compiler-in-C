@@ -43,8 +43,8 @@ void Set::getFirst(struct eachTok &tmpTok){
 void Set::findFirst(){
 	/* add all First() including nonterminal */
 	for(auto& i : Toks){
-		if(i.second.isTerm) i.second.First.insert(i.first);
-		else
+		if(i.second.isTerm) i.second.First.insert(i.first);  //term itself
+		else  //term add first child
 			for(auto j : Gram[i.first].content){
 				i.second.First.insert(j[0]);
 			}
@@ -54,15 +54,31 @@ void Set::findFirst(){
 		if(i.second.isTerm) continue;
 		getFirst(i.second);
 	}
+	/* step 2 & 3 */
+	for(auto& i : Toks){
+		if(i.second.isTerm) continue;
+		else  
+			for(auto j : Gram[i.first].content){
+				string last=j[j.size()-1];
+				for(auto k : j){
+					if(k==last) 
+						Toks[i.first].First.insert(Toks[k].First.begin(), 
+													Toks[k].First.end() );
+					if(k!="epsilon") break;
+					Toks[i.first].First.insert("epsilon");
+				}
+			}
+	}
 }
 
 void Set::printFirst(){
 	printf("First\n");
-	for(auto i : Toks){
-		if(i.second.isTerm) continue; 
+	for(auto n : Seq){
+		struct eachTok i = Toks[n];
+		if(i.isTerm) continue; 
 		/* print terminals */
-		cout << setw(20) << left << i.first << ":";
-		for(auto j : i.second.First)
+		cout << setw(20) << left << i.name << ":";
+		for(auto j : i.First)
 			cout << " " << j;
 		printf("\n");
 	}
@@ -120,24 +136,53 @@ void Set::findFollow(){
 
 void Set::printFollow(){
 	printf("Follow\n");
-	for(auto i : Toks){
-		if(i.second.isTerm) continue; 
+	for(auto n : Seq){
+		struct eachTok i = Toks[n];
+		if(i.isTerm) continue; 
 		/* print terminals */
-		cout << setw(20) << left << i.first << ":";
-		for(auto j : i.second.Follow)
+		cout << setw(20) << left << i.name << ":";
+		for(auto j : i.Follow)
 			cout << " " << j;
 		printf("\n");
 	}
 }
 
 void Set::printLLtable(){
-	for(auto i : LLtable)
-		for(auto j : i.second){
-			cout << setw(20) << left << i.first
+	cout << "S\n";
+	for(auto n : Seq)
+		for(auto j : LLtable[n]){
+			cout << setw(20) << left << n
 				 << setw(20) << left << j.first;
 			for(auto k : j.second)
 				cout << k << " ";
 			cout << endl;
 		}
+}
+
+int Set::Trace(string last, vector< pair<string,string> > now, int k, int stk){
+	for(int i=0; i<stk; ++i) printf("  ");
+	cout << stk+1 << " " << last << endl;
+	if(last=="epsilon") return k;
+	if(k==(int)now.size()) return k;
+	for(auto i : LLtable[last][now[k].first]){
+		if(i==now[k].first){
+			for(int i=0; i<=stk; ++i) printf("  ");
+			cout << stk+2 << " " << i << endl;
+			if(now[k].second!=""){
+				for(int i=0; i<=stk+1; ++i) printf("  ");
+				cout << stk+3 << " " << now[k].second << endl;
+			}
+			++k;
+		}
+		else
+			k=Trace(i,now,k,stk+1);
+	}
+//	for(int i=0; i<stk; ++i) printf("  ");
+//	cout << stk+1 << " " << last << endl;
+	return k;
+}
+
+void Set::Tree(){
+	Trace(Parse[0].first,Parse,1,0);
 }
 

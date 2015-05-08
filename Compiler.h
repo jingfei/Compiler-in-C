@@ -22,17 +22,19 @@ class Compiler{
 		set <string> Follow;
 	};
 	protected:
+		vector <string> Seq;
 		map <string,Grammar> Gram;
 		map <string,eachTok> Toks;
 		map <string, map<string, vector<string> > > LLtable;
 	public:
+		vector< pair<string,string> > Parse;
 		void input(){
 			/* first */
 			struct Grammar tmp;
 			tmp.name="S";
 			vector <string> inFirst;
 			inFirst.push_back("Program");
-			//inFirst.push_back("$");
+			inFirst.push_back("$");
 			tmp.content.push_back(inFirst);
 			Gram[tmp.name]=tmp;
 			struct eachTok tmpTok;
@@ -59,6 +61,7 @@ class Compiler{
 					tmp.content.push_back(inTmp);
 				}
 				else{
+					Seq.push_back(tmp.name);
 					Gram[tmp.name]=tmp;
 					tmp.name=strtok(line,"\n");
 					tmp.content.clear();
@@ -73,6 +76,7 @@ class Compiler{
 					}
 				}
 			}
+			Seq.push_back(tmp.name);
 			Gram[tmp.name]=tmp;
 			Toks["S"].isTerm=false;
 		}
