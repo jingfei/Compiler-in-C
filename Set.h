@@ -9,6 +9,7 @@ class Set: public Compiler{
 		void printFirst();
 		void findFollow();
 		void printFollow();
+		void findLLtable();
 		void printLLtable();
 		void Tree();
 	private:

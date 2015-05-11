@@ -8,17 +8,6 @@
 #include "Set.h"
 using namespace std;
 
-void Set::insertLLtable(string row,string col,string head){
-	if(col=="epsilon") return;
-	map<string, vector<string> >::iterator it = LLtable[row].find(col);
-	if(it!=LLtable[row].end()) return;
-	for(auto i : Gram[row].content)
-		if(i[0]==head)
-			for(auto j : i)
-				LLtable[row][col].push_back(j);
-	if(col=="Program") LLtable[row][col].push_back("$");
-}
-
 void Set::getFirst(struct eachTok &tmpTok){
 	if(tmpTok.isTerm) return;
 	set <string>::iterator it;
@@ -27,16 +16,12 @@ void Set::getFirst(struct eachTok &tmpTok){
 		if( !(Toks[*it].isTerm) ){
 			getFirst(Toks[*it]);
 			/* insert nonterminals */
-			tmpTok.First.insert(Toks[*it].First.begin(),Toks[*it].First.end());
-			/* insert into LLtable */
 			for(auto i : Toks[*it].First)
-				insertLLtable(tmpTok.name,i,*it);
+				if(i!="epsilon")
+					tmpTok.First.insert(i);
 			/* erase this terminal */
 			tmpTok.First.erase(it--);
 		}
-		/* insert nonTerm,Term into LLtable */
-		else
-			insertLLtable(tmpTok.name,*it,*it);
 	}
 }
 
@@ -55,23 +40,27 @@ void Set::findFirst(){
 		getFirst(i.second);
 	}
 	/* step 2 & 3 */
-	Toks["S"].First.insert("$");
-	Toks["S"].First.erase("epsilon");
-//	for(auto& i : Toks){
-//		if(i.second.isTerm) continue;
-//		else  
-//			for(auto j : Gram[i.first].content){
-//				string last=j[j.size()-1];
-//				for(auto k : j){
-//					if(k==last) 
-//						Toks[i.first].First.insert(Toks[k].First.begin(), 
-//													Toks[k].First.end() );
-//					set<string>::iterator it=Toks[k].First.find("epsilon");
-//					if(it==Toks[k].First.end() && !Toks[k].isTerm) break;
-//					Toks[i.first].First.insert("epsilon");
-//				}
-//			}
-//	}
+	for(auto i : Gram){
+		if(Toks[i.first].First.find("epsilon")==Toks[i.first].First.end()){
+			for(auto j : i.second.content){
+				bool allHasEpsilon=true;
+				bool exceptLast=true;
+				for(auto k : j)
+					if(Toks[k].First.find("epsilon")==Toks[k].First.end()){
+						allHasEpsilon=false;
+						if(k!= *(j.end()-1) ) exceptLast=false;
+						break;
+					}
+				if(exceptLast)
+					Toks[i.first].First.insert( Toks[*(j.end()-1)].First.begin(),
+																			Toks[*(j.end()-1)].First.end() );
+				if(allHasEpsilon){
+					Toks[i.first].First.insert("epsilon");
+					break;
+				}
+			}
+		}
+	}
 }
 
 void Set::printFirst(){
@@ -90,7 +79,6 @@ void Set::printFirst(){
 void Set::findFollow(){
 	/* step 1 */
 	Toks["S"].Follow.insert("$");
-	Toks["Program"].Follow.insert("$");
 	/* step 2 */
 	for(auto i : Gram){
 		for(int j=0; j<i.second.content.size(); ++j)
@@ -121,31 +109,6 @@ void Set::findFollow(){
 				}
 			}
 		}
-	/* insert LLtable */
-	for(auto i : Gram){
-		bool findEpsilon=false;
-		for(auto j : i.second.content){
-			if(find(j.begin(),j.end(),"epsilon")!=j.end()){
-				findEpsilon=true;
-				break;
-			}
-		}
-		if(findEpsilon){
-			for(auto j : Toks[i.first].Follow)
-				LLtable[i.first][j].push_back("epsilon");
-		}
-	}
-	LLtable["Program"]["$"].push_back("DeclList");
-	LLtable["S"]["$"].push_back("Program");
-	LLtable["S"]["$"].push_back("$");
-	LLtable["ExprIdTail"][")"].push_back("Expr'");
-	LLtable["ExprIdTail"][","].push_back("Expr'");
-	LLtable["ExprIdTail"][";"].push_back("Expr'");
-	LLtable["ExprIdTail"]["]"].push_back("Expr'");
-	LLtable["ExprArrayTail"][")"].push_back("Expr'");
-	LLtable["ExprArrayTail"][","].push_back("Expr'");
-	LLtable["ExprArrayTail"][";"].push_back("Expr'");
-	LLtable["ExprArrayTail"]["]"].push_back("Expr'");
 }
 
 void Set::printFollow(){
@@ -158,6 +121,32 @@ void Set::printFollow(){
 		for(auto j : i.Follow)
 			cout << " " << j;
 		printf("\n");
+	}
+}
+
+void Set::insertLLtable(string row,string col,string head){
+	if(col=="epsilon"){
+		for(auto i : Toks[row].Follow)
+			insertLLtable(row,i,head);
+	}
+	else if(Toks[col].isTerm){
+		for(auto i : Gram[row].content)
+			if(i[0]==head)
+				for(auto j : i)
+					LLtable[row][col].push_back(j);
+	}
+	else{
+		for(auto i : Toks[col].First)
+			insertLLtable(row,i,head);
+	}
+}
+
+void Set::findLLtable(){
+	for(auto i : Gram){
+		for(auto j : i.second.content){
+			string first=j[0];
+			insertLLtable(i.first,first,first);
+		}
 	}
 }
 
@@ -191,8 +180,6 @@ int Set::Trace(string last, vector< pair<string,string> > now, int k, int stk){
 		else
 			k=Trace(i,now,k,stk+1);
 	}
-//	for(int i=0; i<stk; ++i) printf("  ");
-//	cout << stk+1 << " " << last << endl;
 	return k;
 }
 

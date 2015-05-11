@@ -1,4 +1,5 @@
 #include <iostream>
+#include "Compiler.h"
 #include "Set.h"
 #include "Lexer.h"
 using namespace std;
@@ -18,6 +19,7 @@ int main(){
 	printf("\n\n");
 	s.printFollow();
 	freopen("LLtable.txt","w",stdout);
+	s.findLLtable();
 	s.printLLtable();
 	freopen("tree.txt","w",stdout);
 	s.Tree();

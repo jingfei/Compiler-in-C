@@ -29,7 +29,7 @@ class Compiler{
 	public:
 		vector< pair<string,string> > Parse;
 		void input(){
-			/* first */
+			/* insert S -> Program $ */
 			struct Grammar tmp;
 			tmp.name="S";
 			vector <string> inFirst;
@@ -37,10 +37,15 @@ class Compiler{
 			inFirst.push_back("$");
 			tmp.content.push_back(inFirst);
 			Gram[tmp.name]=tmp;
+			/* insert Toks {S, Program, $} */
 			struct eachTok tmpTok;
 			tmpTok.name=tmp.name;
 			tmpTok.isTerm=true;
 			Toks[tmp.name]=tmpTok;
+			tmpTok.name="Program";
+			Toks[tmpTok.name]=tmpTok;
+			tmpTok.name="$";
+			Toks[tmpTok.name]=tmpTok;
 			/* others */
 			char line[10000];
 			while(fgets(line,sizeof(line),stdin)!=0){
