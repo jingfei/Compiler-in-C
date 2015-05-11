@@ -5,17 +5,16 @@
 
 class Set: public Compiler{
 	public:
+		Set(map <string,Grammar> Gram, 
+			map <string,eachTok> Toks, 
+			vector <string> Seq);
 		void findFirst();
 		void printFirst();
 		void findFollow();
 		void printFollow();
-		void findLLtable();
-		void printLLtable();
-		void Tree();
+		map <string,eachTok> getToks();
 	private:
 		void getFirst(struct eachTok &);
-		void insertLLtable(string row,string col,string head);
-		int Trace(string,vector< pair<string,string> >,int,int);
 };
 
 #endif

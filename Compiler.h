@@ -10,23 +10,23 @@
 using namespace std;
 
 class Compiler{
-	struct Grammar{
-		string name;
-		vector < vector<string> > content;
-	};
-	
-	struct eachTok{
-		string name;
-		bool isTerm;
-		set <string> First;
-		set <string> Follow;
-	};
 	protected:
+		struct Grammar{
+			string name;
+			vector < vector<string> > content;
+		};
+		
+		struct eachTok{
+			string name;
+			bool isTerm;
+			set <string> First;
+			set <string> Follow;
+		};
+	public:
 		vector <string> Seq;
 		map <string,Grammar> Gram;
 		map <string,eachTok> Toks;
 		map <string, map<string, vector<string> > > LLtable;
-	public:
 		vector< pair<string,string> > Parse;
 		void input(){
 			/* insert S -> Program $ */

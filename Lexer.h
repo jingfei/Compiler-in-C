@@ -5,7 +5,8 @@
 
 class Lexer: public Compiler{
 	public:
-		Lexer( );
+		void findLexer();
+		void printLexer();
 		vector< pair<string,string> > getParse();
 	private:
 		vector<string> line;

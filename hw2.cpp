@@ -1,28 +1,41 @@
 #include <iostream>
 #include "Compiler.h"
+#include "Tree.h"
 #include "Set.h"
 #include "Lexer.h"
+#include "LLTable.h"
 using namespace std;
 
 
 int main(){
-	freopen("main.c","r",stdin);
-	Lexer lexer;
-	Set s;
-	s.Parse=lexer.getParse();
+	Compiler compiler;
 	freopen("grammar.txt","r",stdin);
-	s.input();
-	s.findFirst();
-	s.findFollow();
+	compiler.input();
+
+	Lexer lexer;
+	freopen("main.c","r",stdin);
+	lexer.findLexer();
+	compiler.Parse = lexer.getParse();
+
+	Set set(compiler.Gram, compiler.Toks, compiler.Seq);
+	set.findFirst();
+	set.findFollow();
 	freopen("set.txt","w",stdout);
-	s.printFirst();
+	set.printFirst();
 	printf("\n\n");
-	s.printFollow();
+	set.printFollow();
+	compiler.Toks=set.getToks();
+
+	LLTable table(compiler.Gram, compiler.Toks, compiler.Seq);
+	table.findLLtable();
 	freopen("LLtable.txt","w",stdout);
-	s.findLLtable();
-	s.printLLtable();
+	table.printLLtable();
+	compiler.LLtable = table.getLLtable();
+
 	freopen("tree.txt","w",stdout);
-	s.Tree();
+	Tree tree(compiler.LLtable,compiler.Parse);
+	tree.printTree();
+
 	return 0;
 }
 

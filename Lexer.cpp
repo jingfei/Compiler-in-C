@@ -28,7 +28,7 @@ void Lexer::Parser(char tok, string val){
 	Parse.push_back(nextParse);
 }
 
-Lexer::Lexer(){
+void Lexer::findLexer(){
 	string s,tmp;
 	Parse.push_back(pair<string,string>("S",""));
 	while(getline(cin,s)){
