@@ -270,8 +270,8 @@ string SymbolTable::Expr2(string pre, bool isNum){
 	}
 	else if(gram=="epsilon"){
 		if(isNum){
-		//	ftext << "\t# move num\n";
-		//	ftext << "\tli $t4, " << pre << endl;
+			ftext << "\t# move num\n";
+			ftext << "\tli $t4, " << pre << endl;
 			pre="$t4";
 		}
 		return pre;
