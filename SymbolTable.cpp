@@ -104,19 +104,19 @@ void SymbolTable::genDotDataFile(){
             if(i->arr)
                 fp << ".space\t" << (i->arr_size)*4 << endl;
             else
-                fp << ".word\t\0\n";
+                fp << ".word\t0\n";
         }
         else if(i->type == "float"){
             if(i->arr)
                 fp << ".space\t" << (i->arr_size)*4 << endl;
             else
-                fp << ".float\t\0\n";
+                fp << ".float\t0.0\n";
         }
         else if(i->type == "double"){
             if(i->arr)
                 fp << ".space\t" << (i->arr_size)*8 << endl;
             else
-                fp << ".double\t\0\n";
+                fp << ".double\t0.0\n";
         }
     }
     fp.close();
