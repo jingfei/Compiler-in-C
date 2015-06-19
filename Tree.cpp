@@ -8,11 +8,11 @@
 #include "Tree.h"
 using namespace std;
 
-Tree::Tree(map <string, map<string, vector<string> > > LLtable, 
-			vector< pair<string,string> > Parse){
-	this->LLtable = LLtable;
-	this->Parse = Parse;
-}
+//Tree::Tree(map <string, map<string, vector<string> > > LLtable, 
+//			vector< pair<string,string> > Parse){
+//	this->LLtable = LLtable;
+//	this->Parse = Parse;
+//}
 
 int Tree::Trace(string last, vector< pair<string,string> > now, int k, int stk){
 	for(int i=0; i<stk; ++i) printf("  ");

@@ -1,13 +1,15 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include "Compiler.h"
+#include <vector>
+#include <iostream>
+using namespace std;
 
-class Lexer: public Compiler{
+class Lexer{
 	public:
+//		Lexer(vector< pair<string,string> > Parse);
 		void findLexer();
-		void printLexer();
-		vector< pair<string,string> > getParse();
+		vector< pair<string,string> > Parse;
 	private:
 		vector<string> line;
 		string analyze(string, char);

@@ -8,13 +8,13 @@
 #include "LLTable.h"
 using namespace std;
 
-LLTable::LLTable(map <string,Grammar> Gram,	
-					map <string,eachTok> Toks,
-					vector <string> Seq){
-	this->Gram = Gram;
-	this->Toks = Toks;
-	this->Seq = Seq;
-}
+//LLTable::LLTable(map <string,Grammar> Gram,	
+//					map <string,eachTok> Toks,
+//					vector <string> Seq){
+//	this->Gram = Gram;
+//	this->Toks = Toks;
+//	this->Seq = Seq;
+//}
 
 map <string, map<string, vector<string> > > LLTable::getLLtable(){
 	return LLtable;

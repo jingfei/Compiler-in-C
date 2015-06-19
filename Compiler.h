@@ -22,12 +22,12 @@ class Compiler{
 			set <string> First;
 			set <string> Follow;
 		};
+		
 	public:
 		vector <string> Seq;
 		map <string,Grammar> Gram;
 		map <string,eachTok> Toks;
-		map <string, map<string, vector<string> > > LLtable;
-		vector< pair<string,string> > Parse;
+		map <string,map<string, vector<string> > > LLtable;
 		void input(){
 			/* insert S -> Program $ */
 			struct Grammar tmp;

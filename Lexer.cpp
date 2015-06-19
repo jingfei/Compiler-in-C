@@ -7,6 +7,10 @@
 #include "Set.h"
 using namespace std;
 
+//Lexer::Lexer(vector< pair<string,string> > Parse){
+//	this->Parse = Parse;
+//}
+
 void Lexer::Parser(char tok, string val){
 	pair<string,string> nextParse;
 	if(tok=='i'){ //identifier
@@ -41,10 +45,7 @@ void Lexer::findLexer(){
 		if(!isComment(tmp)) analyze(tmp, ' ');
 	}
 	Parse.push_back(pair<string,string>("$",""));
-}
-
-vector< pair<string,string> > Lexer::getParse(){
-	return Parse;
+	cin.clear();
 }
 
 string Lexer::analyze(string s, char cNew){

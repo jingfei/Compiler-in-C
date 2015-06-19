@@ -8,13 +8,13 @@
 #include "Set.h"
 using namespace std;
 
-Set::Set(map <string,Grammar> Gram, 
-			map <string,eachTok> Toks, 
-			vector <string> Seq){
-	this->Gram = Gram;
-	this->Toks = Toks;
-	this->Seq = Seq;
-}
+//Set::Set(map <string,Grammar> Gram, 
+//			map <string,eachTok> Toks, 
+//			vector <string> Seq){
+//	this->Gram = Gram;
+//	this->Toks = Toks;
+//	this->Seq = Seq;
+//}
 
 map <string,Compiler::eachTok> Set::getToks(){
 	return Toks;

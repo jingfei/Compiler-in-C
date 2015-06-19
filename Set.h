@@ -5,9 +5,9 @@
 
 class Set: public Compiler{
 	public:
-		Set(map <string,Grammar> Gram, 
-			map <string,eachTok> Toks, 
-			vector <string> Seq);
+//		Set(map <string,Grammar> Gram, 
+//			map <string,eachTok> Toks, 
+//			vector <string> Seq);
 		void findFirst();
 		void printFirst();
 		void findFollow();

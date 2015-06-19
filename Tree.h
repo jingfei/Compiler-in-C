@@ -1,12 +1,13 @@
 #ifndef TREE_H
 #define TREE_H
 
-#include "Compiler.h"
+#include "Lexer.h"
+#include "LLTable.h"
 
-class Tree : Compiler{
+class Tree : public Lexer, public LLTable{
 	public:
-		Tree(map <string, map<string, vector<string> > > LLtable,
-				vector< pair<string,string> > Parse);
+//		Tree(map <string, map<string, vector<string> > > LLtable,
+//				vector< pair<string,string> > Parse);
 		void printTree();
 	private:
 		int Trace(string,vector< pair<string,string> >,int,int);

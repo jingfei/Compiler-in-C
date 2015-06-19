@@ -1,0 +1,29 @@
+LINK = llvm-link
+GXX = clang++ -std=c++0x -emit-llvm -c
+#GXX = g++ -std=c++0x
+
+all: hw2.ll Set.ll Lexer.ll LLTable.ll Tree.ll
+	$(LINK) hw2.ll Set.ll Lexer.ll LLTable.ll Tree.ll -o hw2.ll
+#	g++ -Wall -g -o test hw2.cpp Set.o Lexer.o Tree.o -std=c++0x
+
+hw2.ll: hw2.cpp Compiler.h
+	$(GXX) hw2.cpp -o hw2.ll
+
+Set.ll: Set.h Set.cpp Compiler.h
+	$(GXX) Set.cpp -o Set.ll
+#	g++ -std=c++0x -Wall -g -c Set.cpp
+
+Lexer.ll: Lexer.h Lexer.cpp Compiler.h
+	$(GXX) Lexer.cpp -o Lexer.ll
+#	g++ -std=c++0x -Wall -g -c Lexer.cpp
+
+LLTable.ll: LLTable.h LLTable.cpp Compiler.h
+	$(GXX) LLTable.cpp -o LLTable.ll
+
+Tree.ll: Tree.h Tree.cpp Compiler.h
+	$(GXX) Tree.cpp -o Tree.ll
+#	g++ -std=c++0x -c -g Tree.cpp -Wall
+
+clean:
+	rm *.bc *.ll
+
