@@ -28,6 +28,7 @@ class SymbolTable{
 			string symbol;
 			string type;
 			bool arr;
+			int arr_size;
 			bool func;
 			/* for stmt */
 			double value;
