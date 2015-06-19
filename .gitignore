@@ -1,0 +1,8 @@
+*.txt
+*.swp
+hw2
+a.out
+answer/*
+*.o
+*.text
+*.data
