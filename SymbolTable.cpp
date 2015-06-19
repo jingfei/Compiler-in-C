@@ -152,13 +152,13 @@ string SymbolTable::Expr(){
 	}
 	else if(gram=="num"){
 		cin >> n >> gram; string num = gram;
-		cin >> n >> gram; string id = Expr2(num);
+		cin >> n >> gram; string id = Expr2(num,true);
 		return id;
 	}
 	else if(gram=="("){
 		cin >> n >> gram; string id = Expr(); 
 		cin >> n >> gram; // )
-		cin >> n >> gram; id = Expr2(id);
+		cin >> n >> gram; id = Expr2(id,false);
 		return id;
 	}
 	else if(gram=="id"){
@@ -169,11 +169,16 @@ string SymbolTable::Expr(){
 	return "epsilon";
 }
 
-string SymbolTable::Expr2(string pre){
+string SymbolTable::Expr2(string pre, bool isNum){
 	int n; string gram; cin >> n >> gram;
 	if(gram=="BinOp"){
 		cin >> n >> gram; string op = gram;
 		cin >> n >> gram; string id = Expr();
+		if(isNum){
+			ftext << "\t# move num\n";
+			ftext << "\tli $t4, " << pre << endl;
+			pre="$t4";
+		}
 		if(op=="+"){
 			ftext << "\t# Add\n";
 			ftext << "\tlw $t1, " << pre << endl;
@@ -200,14 +205,21 @@ string SymbolTable::Expr2(string pre){
 		}
 		return "$t3";
 	}
-	else if(gram=="epsilon") return pre;
+	else if(gram=="epsilon"){
+		if(isNum){
+			ftext << "\t# move num\n";
+			ftext << "\tli $t4, " << pre << endl;
+			pre="$t4";
+		}
+		return pre;
+	}
 	return "epsilon";
 }
 
 string SymbolTable::ExprIdTail(string pre){
 	int n; string gram; cin >> n >> gram;
 	if(gram=="Expr'"){
-		string id = Expr2(pre);
+		string id = Expr2(pre, false);
 		return id;
 	}
 //	else if(gram=="("){

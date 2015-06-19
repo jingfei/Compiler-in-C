@@ -40,7 +40,7 @@ class SymbolTable{
 		/* for grammar */
 		void Stmt();
 		string Expr();
-		string Expr2(string);
+		string Expr2(string,bool isNum);
 		string ExprIdTail(string);
 };
 
