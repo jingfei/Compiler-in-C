@@ -91,7 +91,7 @@ void SymbolTable::genDotDataFile(){
     fstream fp;
     fp.open(".data", ios::out);
     for(auto i : vSymTable){
-        fp << i->symbol << ":\t";
+        fp << i->symbol << i->scope << ":\t";
 
         if(i->type == "int")
             fp << ".word\t0\n";
