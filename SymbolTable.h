@@ -21,7 +21,7 @@ class SymbolTable{
 		/* for scope */
 		int maxScope;
 		stack< pair<int,string> > scope;
-		void newScope(string);
+		void newScope(string,bool);
 		struct SymTable{
 			/* for table */
 			int scope;
@@ -36,13 +36,15 @@ class SymbolTable{
 			int func_scope;
 			string func_name;
 		};
-		map <string,SymTable> symtable; // index is id+scope_num
+		map <string,SymTable> symtable; 
 		vector<SymTable*> vSymTable;
 		/* for grammar */
-		void Stmt();
+		string Stmt();
 		string Expr();
-		string Expr2(string,bool isNum);
+		string Expr2(string,bool isNum=false);
 		string ExprIdTail(string);
+		void ExprArrayTail(string);
+		void ExprListTail(int);
 };
 
 #endif

@@ -10,10 +10,10 @@
 using namespace std;
 
 void SymbolTable::findSymbolTable(){
-	newScope("0");
+	newScope("0",false);
 }
 
-void SymbolTable::newScope(string index){ 
+void SymbolTable::newScope(string index, bool moveStk){ 
 	int n; string gram,new_index="";
 	stack< pair<int,string> > stk;
 	scope.push(pair<int,string>(++maxScope,index)); 
@@ -21,7 +21,16 @@ void SymbolTable::newScope(string index){
 		if(gram=="S" || gram=="Program" || gram=="$") continue;
 		while(!stk.empty() && stk.top().first>=n) stk.pop();
 		stk.push(pair<int,string>(n,gram));
-		if(gram[0]=='{') newScope(new_index);
+		if(gram[0]=='{'){ 
+//			ftext << "Symbol" << (moveStk ? "true" : "false") << endl;
+			if(new_index[0]=='i' && new_index[1]=='f')
+				newScope(new_index, false); 
+			else if(new_index[0]=='w' && new_index[1]=='h' && new_index[2]=='i'
+					&& new_index[3]=='l' && new_index[4]=='e')
+				newScope(new_index, false);
+			else
+				newScope(new_index, moveStk);
+		}
 		else if(gram=="Type"){ // new var (for symbol table)
 			stk.pop();
 			// which type
@@ -31,8 +40,8 @@ void SymbolTable::newScope(string index){
 			cin >> n >> gram;
 			// symbol name
 			cin >> n >> gram;
-			string index = gram + to_string( scope.top().first );
-			if(!stk.empty() && stk.top().second=="ParamDecl") index = gram + to_string(maxScope+1); // param
+			string index = gram; // + to_string( scope.top().first );
+			if(!stk.empty() && stk.top().second=="ParamDecl") index = gram; // + to_string(maxScope+1); // param
 			vSymTable.push_back(&symtable[index]);
 			symtable[index].symbol=gram;
 			symtable[index].type=type;
@@ -48,6 +57,15 @@ void SymbolTable::newScope(string index){
 				symtable[index].func_scope=maxScope+1;
 				new_index = index;
 				ftext << symtable[index].symbol << ":\n";
+				if(symtable[index].symbol!="main"){
+					moveStk=true;
+					ftext << "\tsub $sp, $sp, 16\n";
+					ftext << "\tsw $t1, 4($sp)\n";
+					ftext << "\tsw $t2, 8($sp)\n";
+					ftext << "\tsw $t3, 12($sp)\n";
+					ftext << "\tsw $t4, 16($sp)\n";
+				}
+//				ftext << "func" << (moveStk ? "true" : "false") << endl;
 			}
 			else{  // arr
 				cin >> n >> gram;
@@ -63,14 +81,26 @@ void SymbolTable::newScope(string index){
 				}while(n>=lastn);  
 			}
 		}
-		else if(gram[0]=='}') break;
+		else if(gram[0]=='}'){
+			if(moveStk){
+				moveStk=false;
+				ftext << "\tlw $t1, 4($sp)\n";
+				ftext << "\tlw $t2, 8($sp)\n";
+				ftext << "\tlw $t3, 12($sp)\n";
+				ftext << "\tlw $t4, 16($sp)\n";
+				ftext << "\tadd $sp, $sp, 16\n";
+				ftext << "\tjr $ra\n";
+			}
+			break;
+		}
 		else if(gram=="StmtList"){
+//			ftext << (moveStk ? "true" : "false") << endl;
 			// read Stmt
 			cin >> n >> gram;
-			if(gram=="Stmt") Stmt();
+			if(gram=="Stmt") new_index=Stmt();
 		}
-		if(gram=="if" || gram=="while"){
-			new_index = "if"+to_string(maxScope+1);
+		if(new_index=="if" || new_index=="while"){
+			new_index += to_string(maxScope+1);
 		}
 	}
 	scope.pop();
@@ -105,22 +135,28 @@ void SymbolTable::genDotDataFile(){
     fp.close();
 }
 
-void SymbolTable::Stmt(){
+string SymbolTable::Stmt(){
 	int n; string gram; cin >> n >> gram;
-	if(gram==";") return;
+	if(gram==";") return "";
 	else if(gram=="Expr"){
 		Expr();
 		cin >> n >> gram; //;
 	}
-//	else if(gram=="return"){
-//	}
+	else if(gram=="return"){
+		ftext << "\t# function return $v0\n";
+		cin >> n >> gram; string id = Expr();
+		cin >> n >> gram; //;
+		ftext << "\tlw $v0, " << id << endl;
+	}
 //	else if(gram=="break"){
 //		cin >> n >> gram; //;
 //	}
-//	else if(gram=="if"){
-//	}
-//	else if(gram=="while"){
-//	}
+	else if(gram=="if"){
+		return "if";
+	}
+	else if(gram=="while"){
+		return "while";
+	}
 //	else if(gram=="Block"){
 //	
 //	}
@@ -133,6 +169,7 @@ void SymbolTable::Stmt(){
 		ftext << "\tsyscall\n";
 		ftext << "\tjr $ra\n";
 	}
+	return "";
 }
 
 string SymbolTable::Expr(){
@@ -162,7 +199,7 @@ string SymbolTable::Expr(){
 	else if(gram=="("){
 		cin >> n >> gram; string id = Expr(); 
 		cin >> n >> gram; // )
-		cin >> n >> gram; id = Expr2(id,false);
+		cin >> n >> gram; id = Expr2(id);
 		return id;
 	}
 	else if(gram=="id"){
@@ -223,17 +260,38 @@ string SymbolTable::Expr2(string pre, bool isNum){
 string SymbolTable::ExprIdTail(string pre){
 	int n; string gram; cin >> n >> gram;
 	if(gram=="Expr'"){
-		string id = Expr2(pre, false);
+		string id = Expr2(pre); 
 		return id;
 	}
-//	else if(gram=="("){
-//		cin >> n >> gram; 
-//	}
-//	else if(gram=="["){
-//		cin >> n >> gram; string id = Expr();
-//		cin >> n >> gram; // ]
-//		// get pre[id]
-//	}
+	else if(gram=="("){
+		cin >> n >> gram; 
+		cin >> n >> gram; // ExprList
+		cin >> n >> gram; // grammar in ExprList (ExprListTail or epsilon)
+		if(gram=="ExprListTail") ExprListTail(0);
+		cin >> n >> gram; // )
+		ftext << "\tjal " << pre << endl;
+		ftext << "\t# move function return to $t6\n";
+		ftext << "\tlw $t6, $v0\n";
+		string id = Expr2("$t6");
+		return id;
+	}
+	else if(gram=="["){
+		cin >> n >> gram; string id = Expr();
+		cin >> n >> gram; // ]
+		// get pre[id]
+		ftext << "\t# move to array loc\n";
+		ftext << "\tla $t5, " << pre << endl;
+		ftext << "\tli $t4, " << id << endl;
+		ftext << "\tadd $t4, $t4, $t4\n"; // double the index
+		ftext << "\tadd $t4, $t4, $t4\n"; // index 4x
+		if(symtable[pre].type=="double"){
+			ftext << "\tadd $t4, $t4, $t4\n"; // index 6x
+			ftext << "\tadd $t4, $t4, $t4\n"; // index 8x
+		}
+		ftext << "\tadd $t5, $t4, $t5\n";
+		cin >> n >> gram; ExprArrayTail("0($t5)");
+		return "0($t5)";
+	}
 	else if(gram=="="){
 		cin >> n >> gram; string id = Expr();
 		ftext << "\t# Equal\n";
@@ -241,5 +299,31 @@ string SymbolTable::ExprIdTail(string pre){
 		ftext << "\tsw $t1, " << pre << endl;
 	}
 	return "epsilon";
+}
+
+void SymbolTable::ExprArrayTail(string pre){
+	int n; string gram; cin >> n >> gram;
+	if(gram=="Expr'"){
+		Expr2(pre);
+	}
+	else if(gram=="="){
+		cin >> n >> gram; string id = Expr();
+		ftext << "\t# Equal\n";
+		ftext << "\tlw $t1, " << id << endl;
+		ftext << "\tsw $t1, " << pre << endl;
+	}
+}
+
+void SymbolTable::ExprListTail(int i){
+	int n; string gram; cin >> n >> gram; //Expr
+	string id=Expr();
+	ftext << "\t# move parameter to $ai\n";
+	ftext << "\tlw $a" << i << ", " << id << endl;
+	cin >> n >> gram; //ExprListTail'
+	cin >> n >> gram;
+	if(gram==","){
+		cin >> n >> gram;
+		ExprListTail(i+1);
+	}
 }
 
