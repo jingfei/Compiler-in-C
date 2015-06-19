@@ -120,17 +120,34 @@ void SymbolTable::printSymbolTable(){
 void SymbolTable::genDotDataFile(){
     fstream fp;
     fp.open(".data", ios::out);
+    
     for(auto i : vSymTable){
         fp << i->symbol << ":\t";
 
-        if(i->type == "int")
-            fp << ".word\t0\n";
-        else if(i->type == "float")
-            fp << ".float\t0.0\n";
-        else if(i->type == "double")
-            fp << ".double\t0.0\n";
-        else if(i->type == "char")
-            fp << ".byte\t\0\n";
+        if(i->type == "char"){
+            if(i->arr)
+                fp << ".space\t" << (i->arr_size)*1 << endl;
+            else
+                fp << ".byte\t\0\n";
+        }
+        else if(i->type == "int"){
+            if(i->arr)
+                fp << ".space\t" << (i->arr_size)*4 << endl;
+            else
+                fp << ".word\t0\n";
+        }
+        else if(i->type == "float"){
+            if(i->arr)
+                fp << ".space\t" << (i->arr_size)*4 << endl;
+            else
+                fp << ".float\t0.0\n";
+        }
+        else if(i->type == "double"){
+            if(i->arr)
+                fp << ".space\t" << (i->arr_size)*8 << endl;
+            else
+                fp << ".double\t0.0\n";
+        }
     }
     fp.close();
 }
