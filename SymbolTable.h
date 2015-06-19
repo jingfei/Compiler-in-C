@@ -13,6 +13,7 @@ class SymbolTable{
 		void findSymbolTable();
 		void printSymbolTable();
 		void output();
+        void genDotDataFile();
 	private:
 		/* for scope */
 		int maxScope;

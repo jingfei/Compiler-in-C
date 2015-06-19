@@ -5,6 +5,7 @@
 #include <cstring>
 #include <iomanip>
 #include <algorithm>
+#include <fstream>
 #include "SymbolTable.h"
 using namespace std;
 
@@ -86,6 +87,24 @@ void SymbolTable::printSymbolTable(){
 		cout << setw(8)  << left << (i->func ? "true" : "false"); 
 		cout << endl;
 	}
+}
+
+void SymbolTable::genDotDataFile(){
+    fstream fp;
+    fp.open(".data", ios::out);
+    for(auto i : vSymTable){
+        fp << i->symbol << ":\t";
+
+        if(i->type == "int")
+            fp << ".word\t0\n";
+        else if(i->type == "float")
+            fp << ".float\t0.0\n";
+        else if(i->type == "double")
+            fp << ".double\t0.0\n";
+        else if(i->type == "char")
+            fp << ".byte\t\0\n";
+    }
+    fp.close();
 }
 
 //void SymbolTable::output(){

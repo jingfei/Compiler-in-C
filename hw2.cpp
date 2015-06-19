@@ -35,6 +35,7 @@ int main(){
 	symboltable.findSymbolTable();
 	symboltable.printSymbolTable();
 //	symboltable.output();
+ 	symboltable.genDotDataFile();
 	return 0;
 }
 
