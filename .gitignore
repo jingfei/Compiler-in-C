@@ -2,6 +2,7 @@
 *.swp
 hw2
 a.out
+main.c
 answer/*
 *.o
 *.text

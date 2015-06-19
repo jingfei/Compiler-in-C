@@ -15,25 +15,13 @@ class SymbolTable{
 		}
 		void findSymbolTable();
 		void printSymbolTable();
-		void output();
         void genDotDataFile();
 	private:
 		fstream ftext;
 		/* for scope */
 		int maxScope;
 		stack< pair<int,string> > scope;
-		void newScope(string,bool);
-		/* for output */
-		struct var{
-			var() : res(""), arg1(""), arg2("") {}
-//			bool isMain;
-//			int scope;
-//			vector< pair<int,string> > tree;
-			string res;
-			string arg1,arg2;
-		};
-//		vector<func*> vfuncs;
-//		map<string,func> mfuncs;
+		void newScope(string);
 		struct SymTable{
 			/* for table */
 			int scope;
@@ -45,12 +33,11 @@ class SymbolTable{
 			double value;
 			vector<double> ar;
 			int func_scope;
-			bool isMain;
+			string func_name;
 		};
 		map <string,SymTable> symtable; // index is id+scope_num
 		vector<SymTable*> vSymTable;
 		/* for grammar */
-//		void StmtList(vector< pair<int,string> >::iterator it);
 		void Stmt();
 		string Expr();
 		string Expr2(string);
