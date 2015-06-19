@@ -13,6 +13,7 @@ class SymbolTable{
 			maxScope=-1; 
 			ftext.open(".text", ios::out);
 			if(!ftext){cerr << "Can't open .text!\n"; exit(1);}
+            inExpr2 = false;
 		}
 		void findSymbolTable();
 		void printSymbolTable();
@@ -44,19 +45,21 @@ class SymbolTable{
 		vector<SymTable*> vSymTable;
         stack<string> inorderExp;
         queue<string> postorderExp;
+        bool inExpr2;
 		/* for grammar */
 		string Stmt();
 		string Expr();
 		string Expr2(string,bool isNum=false);
 		string ExprIdTail(string);
+		void ExprArrayTail(string);
+		void ExprListTail(int);
+        
         /* for expersion */
         void inorder2postorder();
         int priority(string);
         string caculateExp();
         string getResult(string, bool, string, bool, string);
         bool isNumber(string);
-		void ExprArrayTail(string);
-		void ExprListTail(int);
 };
 
 #endif
