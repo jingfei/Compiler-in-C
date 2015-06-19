@@ -65,7 +65,7 @@ void SymbolTable::newScope(string index, bool moveStk){
 					ftext << "\tsw $t3, 12($sp)\n";
 					ftext << "\tsw $t4, 16($sp)\n";
 				}
-//				ftext << "func" << (moveStk ? "true" : "false") << endl;
+				else moveStk=false;
 			}
 			else{  // arr
 				cin >> n >> gram;
