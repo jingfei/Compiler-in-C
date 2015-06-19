@@ -47,6 +47,7 @@ void SymbolTable::newScope(string index){
 				symtable[index].func=true;
 				symtable[index].func_scope=maxScope+1;
 				new_index = index;
+				ftext << symtable[index].symbol << ":\n";
 			}
 			else{  // arr
 				cin >> n >> gram;
@@ -62,9 +63,7 @@ void SymbolTable::newScope(string index){
 				}while(n>=lastn);  
 			}
 		}
-		else if(gram[0]=='}'){
-			break;
-		}
+		else if(gram[0]=='}') break;
 		else if(gram=="StmtList"){
 			// read Stmt
 			cin >> n >> gram;
