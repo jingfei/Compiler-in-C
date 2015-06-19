@@ -242,7 +242,7 @@ string SymbolTable::Expr2(string pre, bool isNum){
 		}
         else
             inorderExp.push(pre);
-		/*if(op=="+"){
+		if(op=="+"){
 			ftext << "\t# Add\n";
 			ftext << "\tlw $t1, " << pre << endl;
 			ftext << "\tlw $t2, " << id << endl;
@@ -265,7 +265,7 @@ string SymbolTable::Expr2(string pre, bool isNum){
 			ftext << "\tlw $t1, " << pre << endl;
 			ftext << "\tlw $t2, " << id << endl;
 			ftext << "\tdiv $t3, $t1, $t2\n";
-		}*/
+		}
 		return "$t3";
 	}
 	else if(gram=="epsilon"){
@@ -317,15 +317,15 @@ string SymbolTable::ExprIdTail(string pre){
 	else if(gram=="="){
 		cin >> n >> gram; string id = Expr();
         inorder2postorder();
-        fstream ft;
+        /*fstream ft;
         ft.open("exp.txt", ios::out);
         while(!postorderExp.empty()){
             ft << postorderExp.front() << " ";
             postorderExp.pop();
         }
         ft << endl;
-        ft.close();
-        id = caculateExp();
+        ft.close();*/
+        //id = caculateExp();
 		ftext << "\t# Equal\n";
 		ftext << "\tlw $t1, " << id << endl;
 		ftext << "\tsw $t1, " << pre << endl;
@@ -333,7 +333,6 @@ string SymbolTable::ExprIdTail(string pre){
 	return "epsilon";
 }
 
-<<<<<<< HEAD
 void SymbolTable::inorder2postorder(){
     stack<string> temp;
     string item = inorderExp.top();
@@ -381,20 +380,24 @@ string SymbolTable::caculateExp(){
     string item = postorderExp.front();
     while(!postorderExp.empty()){
         while(item!="+" && item!="-" && item!="*" && item!="/"){
+            ftext  << "item is " << item << endl;
             temp.push(item);
+            ftext << "stack push " << item << endl;
             postorderExp.pop();
             item = postorderExp.front();
         }
         string pre = temp.top();
+        ftext << "pre is "<<pre << endl;
         temp.pop();
         string id = temp.top();
+        ftext << "id is" << id << endl;
         temp.pop();
         string result = getResult(pre, isNumber(pre), id, isNumber(id), item);
         temp.push(result);
         postorderExp.pop();
         item = postorderExp.front();
     }
-    return temp.top();
+    return temp.top()+"isResult";
 }
 
 string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum, string op){
@@ -433,6 +436,8 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		ftext << "\tlw $t2, " << id << endl;
 		ftext << "\tdiv $t3, $t1, $t2\n";
 	}
+    else
+        ftext << "op is " << op << endl; 
 	return "$t3";
 }
 
