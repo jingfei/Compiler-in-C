@@ -13,7 +13,6 @@ class SymbolTable{
 			maxScope=-1; 
 			ftext.open(".text", ios::out);
 			if(!ftext){cerr << "Can't open .text!\n"; exit(1);}
-            inExpr2 = false;
 		}
 		void findSymbolTable();
 		void printSymbolTable();
@@ -45,7 +44,6 @@ class SymbolTable{
 		vector<SymTable*> vSymTable;
         stack<string> inorderExp;
         queue<string> postorderExp;
-        bool inExpr2;
 		/* for grammar */
 		string Stmt(string bkstmt="");
 		string Expr();
