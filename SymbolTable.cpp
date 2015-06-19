@@ -22,16 +22,7 @@ void SymbolTable::newScope(string index, bool moveStk){
 		if(gram=="S" || gram=="Program" || gram=="$") continue;
 		while(!stk.empty() && stk.top().first>=n) stk.pop();
 		stk.push(pair<int,string>(n,gram));
-		if(gram[0]=='{'){ 
-//			ftext << "Symbol" << (moveStk ? "true" : "false") << endl;
-			if(new_index[0]=='i' && new_index[1]=='f')
-				newScope(new_index, false); 
-			else if(new_index[0]=='w' && new_index[1]=='h' && new_index[2]=='i'
-					&& new_index[3]=='l' && new_index[4]=='e')
-				newScope(new_index, false);
-			else
-				newScope(new_index, moveStk);
-		}
+		if(gram[0]=='{') newScope(new_index, moveStk);
 		else if(gram=="Type"){ // new var (for symbol table)
 			stk.pop();
 			// which type
@@ -95,13 +86,9 @@ void SymbolTable::newScope(string index, bool moveStk){
 			break;
 		}
 		else if(gram=="StmtList"){
-//			ftext << (moveStk ? "true" : "false") << endl;
 			// read Stmt
 			cin >> n >> gram;
 			if(gram=="Stmt") new_index=Stmt();
-		}
-		if(new_index=="if" || new_index=="while"){
-			new_index += to_string(maxScope+1);
 		}
 	}
 	scope.pop();
@@ -153,7 +140,7 @@ void SymbolTable::genDotDataFile(){
     fp.close();
 }
 
-string SymbolTable::Stmt(){
+string SymbolTable::Stmt(string bkstmt){
 	int n; string gram; cin >> n >> gram;
 	if(gram==";") return "";
 	else if(gram=="Expr"){
@@ -166,18 +153,39 @@ string SymbolTable::Stmt(){
 		cin >> n >> gram; //;
 		ftext << "\tlw $v0, " << id << endl;
 	}
-//	else if(gram=="break"){
-//		cin >> n >> gram; //;
-//	}
+	else if(gram=="break"){
+		cin >> n >> gram; //;
+		ftext << "\tj " << bkstmt << endl;
+	}
 	else if(gram=="if"){
-		return "if";
+		cin >> n >> gram; // (
+		cin >> n >> gram; string id = Expr();
+		cin >> n >> gram; // )
+		ftext << "\t# if stmt\n\tcompare zero\n";
+		ftext << "\tbeq " << id << ", $zero, Else" << to_string(maxScope+1) << endl;
+		cin >> n >> gram; Stmt(bkstmt);
+		ftext << "\tj EndIf" << to_string(maxScope+1) << endl;
+		cin >> n >> gram; // else
+		ftext << "Else" << to_string(maxScope+1) << ":\n";
+		cin >> n >> gram; Stmt(bkstmt);
+		ftext << "EndIf" << to_string(maxScope) << ":\n";
 	}
 	else if(gram=="while"){
-		return "while";
+		cin >> n >> gram; // (
+		cin >> n >> gram; string id = Expr();
+		cin >> n >> gram; // )
+		ftext << "\t# while loop\n\tcompare zero\n";
+		ftext << "While"+to_string(maxScope+1) << ":\n";
+		ftext << "\tbeq " << id << ", $zero, EndWhile" << to_string(maxScope+1) << endl;
+		cin >> n >> gram; Stmt("EndWhile"+to_string(maxScope+1));
+		ftext << "\tj While"+to_string(maxScope) << endl;
+		ftext << "EndWhile" << to_string(maxScope) << ":\n";
 	}
-//	else if(gram=="Block"){
-//	
-//	}
+	else if(gram=="Block"){
+		cin >> n >> gram; // {
+		string new_index = "Block"+to_string(maxScope+1);
+		newScope(new_index, false); 
+	}
 	else if(gram=="print"){
 		cin >> n >> gram; string id = gram;
 		cin >> n >> gram; //;
