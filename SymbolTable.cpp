@@ -15,6 +15,7 @@ void SymbolTable::findSymbolTable(){
 }
 
 void SymbolTable::newScope(string index, bool moveStk){ 
+<<<<<<< HEAD
     int n; string gram,new_index="";
     stack< pair<int,string> > stk;
     scope.push(pair<int,string>(++maxScope,index)); 
@@ -105,6 +106,85 @@ void SymbolTable::newScope(string index, bool moveStk){
         }
     }
     scope.pop();
+=======
+	int n; string gram,new_index="";
+	stack< pair<int,string> > stk;
+	scope.push(pair<int,string>(++maxScope,index)); 
+	while(cin >> n >> gram){
+		if(gram=="S" || gram=="Program" || gram=="$") continue;
+		while(!stk.empty() && stk.top().first>=n) stk.pop();
+		stk.push(pair<int,string>(n,gram));
+		if(gram[0]=='{') newScope(new_index, moveStk);
+		else if(gram=="Type"){ // new var (for symbol table)
+			stk.pop();
+			// which type
+			cin >> n >> gram; 
+			string type = gram;
+			// this is symbol
+			cin >> n >> gram;
+			// symbol name
+			cin >> n >> gram;
+			string index = gram; // + to_string( scope.top().first );
+			if(!stk.empty() && stk.top().second=="ParamDecl") index = gram; // + to_string(maxScope+1); // param
+			vSymTable.push_back(&symtable[index]);
+			symtable[index].symbol=gram;
+			symtable[index].type=type;
+			symtable[index].scope = scope.top().first;
+			if(!stk.empty() && stk.top().second=="ParamDecl") 
+				symtable[index].scope=maxScope+1;  // param
+			// next gram
+			cin >> n >> gram;
+			if(gram=="Decl") cin >> n >> gram; // next gram
+			// judge whether func, ar or not
+			if(gram=="FunDecl"){ // func
+				symtable[index].func=true;
+				symtable[index].func_scope=maxScope+1;
+				new_index = index;
+				ftext << symtable[index].symbol << ":\n";
+				if(symtable[index].symbol!="main"){
+					moveStk=true;
+					ftext << "\tsub $sp, $sp, 16\n";
+					ftext << "\tsw $t1, 4($sp)\n";
+					ftext << "\tsw $t2, 8($sp)\n";
+					ftext << "\tsw $t3, 12($sp)\n";
+					ftext << "\tsw $t4, 16($sp)\n";
+				}
+				else moveStk=false;
+			}
+			else{  // arr
+				cin >> n >> gram;
+				if(gram[0]=='[') symtable[index].arr=true;
+				// end declare
+				int lastn=n;
+				do{
+					cin >> n >> gram;
+					if(gram=="num"){
+						cin >> n >> n;
+						symtable[index].arr_size=n;
+					}
+				}while(n>=lastn);  
+			}
+		}
+		else if(gram[0]=='}'){
+			if(moveStk){
+				moveStk=false;
+				ftext << "\tlw $t1, 4($sp)\n";
+				ftext << "\tlw $t2, 8($sp)\n";
+				ftext << "\tlw $t3, 12($sp)\n";
+				ftext << "\tlw $t4, 16($sp)\n";
+				ftext << "\tadd $sp, $sp, 16\n";
+				ftext << "\tjr $ra\n";
+			}
+			break;
+		}
+		else if(gram=="StmtList"){
+			// read Stmt
+			cin >> n >> gram;
+			if(gram=="Stmt") new_index=Stmt();
+		}
+	}
+	scope.pop();
+>>>>>>> acd61df094a37657e3b00e134f21c0804d32390a
 }
 
 void SymbolTable::printSymbolTable(){
@@ -153,6 +233,7 @@ void SymbolTable::genDotDataFile(){
     fp.close();
 }
 
+<<<<<<< HEAD
 string SymbolTable::Stmt(){
     int n; string gram; cin >> n >> gram;
     if(gram==";") return "";
@@ -188,6 +269,64 @@ string SymbolTable::Stmt(){
         ftext << "\tjr $ra\n";
     }
     return "";
+=======
+string SymbolTable::Stmt(string bkstmt){
+	int n; string gram; cin >> n >> gram;
+	if(gram==";") return "";
+	else if(gram=="Expr"){
+		Expr();
+		cin >> n >> gram; //;
+	}
+	else if(gram=="return"){
+		ftext << "\t# function return $v0\n";
+		cin >> n >> gram; string id = Expr();
+		cin >> n >> gram; //;
+		ftext << "\tlw $v0, " << id << endl;
+	}
+	else if(gram=="break"){
+		cin >> n >> gram; //;
+		ftext << "\tj " << bkstmt << endl;
+	}
+	else if(gram=="if"){
+		cin >> n >> gram; // (
+		cin >> n >> gram; string id = Expr();
+		cin >> n >> gram; // )
+		ftext << "\t# if stmt\n\tcompare zero\n";
+		ftext << "\tbeq " << id << ", $zero, Else" << to_string(maxScope+1) << endl;
+		cin >> n >> gram; Stmt(bkstmt);
+		ftext << "\tj EndIf" << to_string(maxScope+1) << endl;
+		cin >> n >> gram; // else
+		ftext << "Else" << to_string(maxScope+1) << ":\n";
+		cin >> n >> gram; Stmt(bkstmt);
+		ftext << "EndIf" << to_string(maxScope) << ":\n";
+	}
+	else if(gram=="while"){
+		cin >> n >> gram; // (
+		cin >> n >> gram; string id = Expr();
+		cin >> n >> gram; // )
+		ftext << "\t# while loop\n\tcompare zero\n";
+		ftext << "While"+to_string(maxScope+1) << ":\n";
+		ftext << "\tbeq " << id << ", $zero, EndWhile" << to_string(maxScope+1) << endl;
+		cin >> n >> gram; Stmt("EndWhile"+to_string(maxScope+1));
+		ftext << "\tj While"+to_string(maxScope) << endl;
+		ftext << "EndWhile" << to_string(maxScope) << ":\n";
+	}
+	else if(gram=="Block"){
+		cin >> n >> gram; // {
+		string new_index = "Block"+to_string(maxScope+1);
+		newScope(new_index, false); 
+	}
+	else if(gram=="print"){
+		cin >> n >> gram; string id = gram;
+		cin >> n >> gram; //;
+		ftext << "\t# print\n";
+		ftext << "\tli $v0, 1\n";
+		ftext << "\tadd $a0, " << id << ", $zero\n";
+		ftext << "\tsyscall\n";
+		ftext << "\tjr $ra\n";
+	}
+	return "";
+>>>>>>> acd61df094a37657e3b00e134f21c0804d32390a
 }
 
 string SymbolTable::Expr(){

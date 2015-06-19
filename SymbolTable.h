@@ -47,7 +47,7 @@ class SymbolTable{
         queue<string> postorderExp;
         bool inExpr2;
 		/* for grammar */
-		string Stmt();
+		string Stmt(string bkstmt="");
 		string Expr();
 		string Expr2(string,bool isNum=false);
 		string ExprIdTail(string);
