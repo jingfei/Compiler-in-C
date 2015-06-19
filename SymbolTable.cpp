@@ -18,9 +18,9 @@ void SymbolTable::newScope(string index, bool isMain){
 	bool stmt=false;
 	stack< pair<int,string> > stk;
 	scope.push(pair<int,string>(++maxScope,index)); 
-	vfuncs.push_back(&mfuncs[index]);
-	mfuncs[index].isMain=isMain;
-	mfuncs[index].scope=maxScope;
+//	vfuncs.push_back(&mfuncs[index]);
+//	mfuncs[index].isMain=isMain;
+//	mfuncs[index].scope=maxScope;
 	while(cin >> n >> gram){
 		if(gram=="S" || gram=="Program" || gram=="$") continue;
 		while(!stk.empty() && stk.top().first>=n) stk.pop();
@@ -65,11 +65,9 @@ void SymbolTable::newScope(string index, bool isMain){
 			break;
 		}
 		else if(gram=="StmtList"){
-			stmt=true;
-			mfuncs[index].tree.push_back(pair<int,string>(n,gram));
-		}
-		else if(stmt){
-			mfuncs[index].tree.push_back(pair<int,string>(n,gram));
+			// read Stmt
+			cin >> n >> gram;
+			if(gram=="Stmt") Stmt();
 		}
 		if(gram=="if" || gram=="while"){
 			new_index = "if"+to_string(maxScope+1);
@@ -131,44 +129,130 @@ void SymbolTable::genDotDataFile(){
 //		
 //
 //}
-//
-//void SymbolTable::Expr(){
-//	if(it->second=="UnaryOp"){
-//		++it; string s = it->second;
-//		++it; string id = Expr();
-//		if(s=="-"){
-//			cout << "# Unary minus\n";
-//			cout << "lw $t1, " << id << endl;
-//			cout << "sub $t1, $zero, $t1\n";
-//			cout << "sw $t1, " << id << endl;
-//		}
-//		else if(s=="!"){
-//			cout << "# Not\n";
-//			cout << "lw $t1, " << id << endl;
-//			cout << "not $t1, $t1\n";
-//			cout << "sw $t1, " << id << endl;
-//		}
-//		return id;
-//	}
-//	else if(it->second=="num"){
-//		++it; string n = it->second;
-//		++it; string id = Expr2(n);
-//		return id;
-//	}
-//}
-//
-//void Expr2(string n){
-//	if(it->second=="BinOp"){
-//		++it; string op = it->second;
-//		++it; string id = Expr();
-//		if(op=="+"){
-//			cout << "# Add\n";
-//			cout << "lw $t1, " << n << endl;
-//			cout << "lw $t2, " << id << endl;
-//			cout << "add $t1, $t1, $t2\n";
-//			cout << "sw $t1, 
-//		}
-//	}
-//}
 
+void SymbolTable::Stmt(){
+	int n; string gram; cin >> n >> gram;
+	if(gram==";") return;
+	else if(gram=="Expr"){
+		Expr();
+		cin >> n >> gram; //;
+	}
+//	else if(gram=="return"){
+//	}
+//	else if(gram=="break"){
+//		cin >> n >> gram; //;
+//	}
+//	else if(gram=="if"){
+//	}
+//	else if(gram=="while"){
+//	}
+//	else if(gram=="Block"){
+//	
+//	}
+	else if(gram=="print"){
+		cin >> n >> gram; string id = gram;
+		cin >> n >> gram; //;
+		ftext << "\t# print\n";
+		ftext << "\tli $v0, 1\n";
+		ftext << "\tadd $a0, " << id << ", $zero\n";
+		ftext << "\tsyscall\n";
+		ftext << "\tjr $ra\n";
+	}
+}
+
+string SymbolTable::Expr(){
+	int n; string gram; cin >> n >> gram;
+	if(gram=="UnaryOp"){
+		cin >> n >> gram; string s = gram;
+		cin >> n >> gram; string id = Expr();
+		if(s=="-"){
+			ftext << "\t" << "# Unary minus\n";
+			ftext << "\t" << "lw $t1, " << id << endl;
+			ftext << "\t" << "sub $t1, $zero, $t1\n";
+			ftext << "\t" << "sw $t1, " << id << endl;
+		}
+		else if(s=="!"){
+			ftext << "\t" << "# Not\n";
+			ftext << "\t" << "lw $t1, " << id << endl;
+			ftext << "\t" << "not $t1, $t1\n";
+			ftext << "\t" << "sw $t1, " << id << endl;
+		}
+		return id;
+	}
+	else if(gram=="num"){
+		cin >> n >> gram; string num = gram;
+		cin >> n >> gram; string id = Expr2(num);
+		return id;
+	}
+	else if(gram=="("){
+		cin >> n >> gram; string id = Expr(); 
+		cin >> n >> gram; // )
+		cin >> n >> gram; id = Expr2(id);
+		return id;
+	}
+	else if(gram=="id"){
+		cin >> n >> gram; string id = gram;
+		cin >> n >> gram; id = ExprIdTail(id);
+		return id;
+	}
+	return "epsilon";
+}
+
+string SymbolTable::Expr2(string pre){
+	int n; string gram; cin >> n >> gram;
+	if(gram=="BinOp"){
+		cin >> n >> gram; string op = gram;
+		cin >> n >> gram; string id = Expr();
+		if(op=="+"){
+			ftext << "\t" << "# Add\n";
+			ftext << "\t" << "lw $t1, " << pre << endl;
+			ftext << "\t" << "lw $t2, " << id << endl;
+			ftext << "\t" << "add $t3, $t1, $t2\n";
+		}
+		else if(op=="-"){
+			ftext << "\t" << "# Sub\n";
+			ftext << "\t" << "lw $t1, " << pre << endl;
+			ftext << "\t" << "lw $t2, " << id << endl;
+			ftext << "\t" << "sub $t3, $t1, $t2\n"; 
+		}
+		else if(op=="*"){
+			ftext << "\t" << "# Mult\n";
+			ftext << "\t" << "lw $t1, " << pre << endl;
+			ftext << "\t" << "lw $t2, " << id << endl;
+			ftext << "\t" << "mul $t3, $t1, $t2\n";
+		}
+		else if(op=="/"){
+			ftext << "\t" << "# Div\n";
+			ftext << "\t" << "lw $t1, " << pre << endl;
+			ftext << "\t" << "lw $t2, " << id << endl;
+			ftext << "\t" << "div $t3, $t1, $t2\n";
+		}
+		return "$t3";
+	}
+	else if(gram=="epsilon") return pre;
+	return "epsilon";
+}
+
+string SymbolTable::ExprIdTail(string pre){
+	int n; string gram; cin >> n >> gram;
+	if(gram=="Expr'"){
+		string id = Expr2(pre);
+		return id;
+	}
+//	else if(gram=="("){
+//		cin >> n >> gram; 
+//	}
+//	else if(gram=="["){
+//		cin >> n >> gram; string id = Expr();
+//		cin >> n >> gram; // ]
+//		// get pre[id]
+//	}
+	else if(gram=="="){
+		cin >> n >> gram; string id = Expr();
+		ftext << "\t" << "# Equal\n";
+		ftext << "\t" << "lw $t1, " << id << endl;
+		ftext << "\t" << "sw $t1, " << pre << endl;
+	}
+	return "epsilon";
+}
 
