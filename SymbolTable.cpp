@@ -53,7 +53,13 @@ void SymbolTable::newScope(string index){
 				if(gram[0]=='[') symtable[index].arr=true;
 				// end declare
 				int lastn=n;
-				do{cin >> n >> gram;}while(n>=lastn);  
+				do{
+					cin >> n >> gram;
+					if(gram=="num"){
+						cin >> n >> n;
+						symtable[index].arr_size=n;
+					}
+				}while(n>=lastn);  
 			}
 		}
 		else if(gram[0]=='}'){
@@ -73,7 +79,6 @@ void SymbolTable::newScope(string index){
 
 void SymbolTable::printSymbolTable(){
 	for(auto i : vSymTable){
-		cout << setw(8) << left << i->func_name;
 		cout << setw(5)  << left << i->scope;
 		cout << setw(10) << left << i->symbol;
 		cout << setw(8)  << left << i->type;
