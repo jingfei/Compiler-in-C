@@ -2,6 +2,7 @@
 #define SYMBOLTABLE_H
 
 #include <stack>
+#include <queue>
 #include <iostream>
 #include <fstream>
 using namespace std;
@@ -16,6 +17,9 @@ class SymbolTable{
 		void findSymbolTable();
 		void printSymbolTable();
         void genDotDataFile();
+        ~SymbolTable(){
+            ftext.close();
+        }
 	private:
 		fstream ftext;
 		/* for scope */
@@ -38,11 +42,19 @@ class SymbolTable{
 		};
 		map <string,SymTable> symtable; // index is id+scope_num
 		vector<SymTable*> vSymTable;
+        stack<string> inorderExp;
+        queue<string> postorderExp;
 		/* for grammar */
 		void Stmt();
 		string Expr();
 		string Expr2(string,bool isNum);
 		string ExprIdTail(string);
+        /* for expersion */
+        void inorder2postorder();
+        int priority(string);
+        string caculateExp();
+        string getResult(string, bool, string, bool, string);
+        bool isNumber(string);
 };
 
 #endif
