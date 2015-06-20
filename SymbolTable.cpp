@@ -382,13 +382,13 @@ string SymbolTable::ExprIdTail(string pre){
 		cin >> n >> gram; string id = Expr();
 		while(!postorderExp.empty())
 			postorderExp.pop();
-		fstream ft1;
+		/*fstream ft1;
 		  ft1.open("exp1.txt", ios::out);
 		  while(!inorderExp.empty()){
 		  ft1 << inorderExp.top() << " ";
 		  inorderExp.pop();
 		  }
-		  ft1<< endl;
+		  ft1<< endl;*/
 		inorder2postorder();
 		while(!inorderExp.empty())
 			inorderExp.pop();
