@@ -386,7 +386,7 @@ string SymbolTable::ExprIdTail(string pre){
 		  postorderExp.pop();
 		  }
 		  ft << endl;*/
-		id = caculateExp();
+		id = postorderExp.empty() ? id : caculateExp();
 		ftext << "\t# Equal\n";
 		if(id[0]=='$') ftext << "\tmove $t1, " << id << endl;
 		else ftext << "\tlw $t1, " << id << endl;
@@ -443,7 +443,7 @@ int SymbolTable::priority(string item){
 string SymbolTable::caculateExp(){
 	if(!postorderExp.empty()){
 		stack<string> temp;
-		if(postorderExp.size()<3) return "$t4"; 
+		if(postorderExp.size()<3) return postorderExp.front(); 
 		string item = postorderExp.front();
 		while(!postorderExp.empty()){
 			while(item!="+" && item!="-" && item!="*" && item!="/"){
