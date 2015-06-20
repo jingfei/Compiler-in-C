@@ -320,6 +320,8 @@ string SymbolTable::Expr2(string pre, bool isNum){
 			//	ftext << "\tli $t4, " << pre << endl;
 			pre="$t4";
 		}
+        else
+            inorderExp.push(pre);
 		return pre;
 	}
 	return "epsilon";
@@ -328,7 +330,8 @@ string SymbolTable::Expr2(string pre, bool isNum){
 string SymbolTable::ExprIdTail(string pre){
 	int n; string gram; cin >> n >> gram;
 	if(gram=="Expr'"){
-		string id = Expr2(pre); 
+		string id = Expr2(pre);
+        
 		return id;
 	}
 	else if(gram=="("){
