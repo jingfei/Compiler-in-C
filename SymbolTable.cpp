@@ -245,7 +245,14 @@ string SymbolTable::Expr(){
 	else if(gram=="("){
 		cin >> n >> gram; string id = Expr(); 
 		cin >> n >> gram; // )
+        inStack.push(inorderExp);
+        while(!inorderExp.empty()) inorderExp.pop();
+        postStack.push(postorderExp);
+        while(!postorderExp.empty()) postorderExp.pop();
 		cin >> n >> gram; id = Expr2(id);
+        inorder2postorder();
+        id = caculateExp();
+        
 		return id;
 	}
 	else if(gram=="id"){
