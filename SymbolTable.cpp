@@ -11,6 +11,7 @@
 using namespace std;
 
 void SymbolTable::findSymbolTable(){
+	ftext << ".text\n";
 	newScope("0",false);
 }
 
@@ -106,38 +107,36 @@ void SymbolTable::printSymbolTable(){
 }
 
 void SymbolTable::genDotDataFile(){
-    fstream fp;
-    fp.open(".data", ios::out);
-    
+ 	ftext << ".data\n";   
     for(auto i : vSymTable){
-        fp << i->symbol << ":\t";
+		if(i->func) continue;
+        ftext << i->symbol << ":\t";
 
         if(i->type == "char"){
             if(i->arr)
-                fp << ".space\t" << (i->arr_size)*1 << endl;
+                ftext << ".space\t" << (i->arr_size)*1 << endl;
             else
-                fp << ".byte\t\0\n";
+                ftext << ".byte\t\0\n";
         }
         else if(i->type == "int"){
             if(i->arr)
-                fp << ".space\t" << (i->arr_size)*4 << endl;
+                ftext << ".space\t" << (i->arr_size)*4 << endl;
             else
-                fp << ".word\t0\n";
+                ftext << ".word\t0\n";
         }
         else if(i->type == "float"){
             if(i->arr)
-                fp << ".space\t" << (i->arr_size)*4 << endl;
+                ftext << ".space\t" << (i->arr_size)*4 << endl;
             else
-                fp << ".float\t0.0\n";
+                ftext << ".float\t0.0\n";
         }
         else if(i->type == "double"){
             if(i->arr)
-                fp << ".space\t" << (i->arr_size)*8 << endl;
+                ftext << ".space\t" << (i->arr_size)*8 << endl;
             else
-                fp << ".double\t0.0\n";
+                ftext << ".double\t0.0\n";
         }
     }
-    fp.close();
 }
 
 string SymbolTable::Stmt(string bkstmt){
@@ -151,7 +150,8 @@ string SymbolTable::Stmt(string bkstmt){
 		ftext << "\t# function return $v0\n";
 		cin >> n >> gram; string id = Expr();
 		cin >> n >> gram; //;
-		ftext << "\tlw $v0, " << id << endl;
+		if(id[0]=='$') ftext << "\tmove $v0, " << id << endl;
+		else ftext << "\tlw $v0, " << id << endl;
 	}
 	else if(gram=="break"){
 		cin >> n >> gram; //;
@@ -161,12 +161,13 @@ string SymbolTable::Stmt(string bkstmt){
 		cin >> n >> gram; // (
 		cin >> n >> gram; string id = Expr();
 		cin >> n >> gram; // )
-		ftext << "\t# if stmt\n\tcompare zero\n";
-		ftext << "\tbeq " << id << ", $zero, Else" << to_string(maxScope+1) << endl;
+		ftext << "\t# if stmt\n\t# compare zero\n";
+		ftext << "\tlw $t1, " << id << endl;
+		ftext << "\tbeq $t1, $zero, Else" << to_string(maxScope+1) << endl;
 		cin >> n >> gram; Stmt(bkstmt);
 		ftext << "\tj EndIf" << to_string(maxScope+1) << endl;
 		cin >> n >> gram; // else
-		ftext << "Else" << to_string(maxScope+1) << ":\n";
+		ftext << "Else" << to_string(maxScope) << ":\n";
 		cin >> n >> gram; Stmt(bkstmt);
 		ftext << "EndIf" << to_string(maxScope) << ":\n";
 	}
@@ -174,9 +175,10 @@ string SymbolTable::Stmt(string bkstmt){
 		cin >> n >> gram; // (
 		cin >> n >> gram; string id = Expr();
 		cin >> n >> gram; // )
-		ftext << "\t# while loop\n\tcompare zero\n";
+		ftext << "\t# while loop\n\t# compare zero\n";
 		ftext << "While"+to_string(maxScope+1) << ":\n";
-		ftext << "\tbeq " << id << ", $zero, EndWhile" << to_string(maxScope+1) << endl;
+		ftext << "\tlw $t1, " << id << endl;
+		ftext << "\tbeq $t1, $zero, EndWhile" << to_string(maxScope+1) << endl;
 		cin >> n >> gram; Stmt("EndWhile"+to_string(maxScope+1));
 		ftext << "\tj While"+to_string(maxScope) << endl;
 		ftext << "EndWhile" << to_string(maxScope) << ":\n";
@@ -187,11 +189,13 @@ string SymbolTable::Stmt(string bkstmt){
 		newScope(new_index, false); 
 	}
 	else if(gram=="print"){
+		cin >> n >> gram;
 		cin >> n >> gram; string id = gram;
 		cin >> n >> gram; //;
 		ftext << "\t# print\n";
 		ftext << "\tli $v0, 1\n";
-		ftext << "\tadd $a0, " << id << ", $zero\n";
+		ftext << "\tlw $t1, " << id << endl;
+		ftext << "\tadd $a0, $t1, $zero\n";
 		ftext << "\tsyscall\n";
 		ftext << "\tjr $ra\n";
 	}
@@ -205,13 +209,15 @@ string SymbolTable::Expr(){
 		cin >> n >> gram; string id = Expr();
 		if(s=="-"){
 			ftext << "\t# Unary minus\n";
-			ftext << "\tlw $t1, " << id << endl;
+			if(id[0]=='$') ftext << "\tmove $v0, " << id << endl;
+			else ftext << "\tlw $v0, " << id << endl;
 			ftext << "\tsub $t1, $zero, $t1\n";
 			ftext << "\tsw $t1, " << id << endl;
 		}
 		else if(s=="!"){
 			ftext << "\t# Not\n";
-			ftext << "\tlw $t1, " << id << endl;
+			if(id[0]=='$') ftext << "\tmove $v0, " << id << endl;
+			else ftext << "\tlw $v0, " << id << endl;
 			ftext << "\tnot $t1, $t1\n";
 			ftext << "\tsw $t1, " << id << endl;
 		}
@@ -245,33 +251,42 @@ string SymbolTable::Expr2(string pre, bool isNum){
         inorderExp.push(op);
 		if(isNum){
 			ftext << "\t# move num\n";
-			ftext << "\tli $t4, " << pre << endl;
+			if(pre[0]=='$') ftext << "\tmove $t4, " << pre << endl;
+			else ftext << "\tlw $t4, " << pre << endl;
 			pre="$t4";
 		}
         else
             inorderExp.push(pre);
 		if(op=="+"){
 			ftext << "\t# Add\n";
-			ftext << "\tlw $t1, " << pre << endl;
-			ftext << "\tlw $t2, " << id << endl;
+			if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
+			else ftext << "\tlw $t1, " << pre << endl;
+			if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
+			else ftext << "\tlw $t2, " << id << endl;
 			ftext << "\tadd $t3, $t1, $t2\n";
 		}
 		else if(op=="-"){
 			ftext << "\t# Sub\n";
-			ftext << "\tlw $t1, " << pre << endl;
-			ftext << "\tlw $t2, " << id << endl;
+			if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
+			else ftext << "\tlw $t1, " << pre << endl;
+			if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
+			else ftext << "\tlw $t2, " << id << endl;
 			ftext << "\tsub $t3, $t1, $t2\n"; 
 		}
 		else if(op=="*"){
 			ftext << "\t# Mult\n";
-			ftext << "\tlw $t1, " << pre << endl;
-			ftext << "\tlw $t2, " << id << endl;
+			if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
+			else ftext << "\tlw $t1, " << pre << endl;
+			if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
+			else ftext << "\tlw $t2, " << id << endl;
 			ftext << "\tmul $t3, $t1, $t2\n";
 		}
 		else if(op=="/"){
 			ftext << "\t# Div\n";
-			ftext << "\tlw $t1, " << pre << endl;
-			ftext << "\tlw $t2, " << id << endl;
+			if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
+			else ftext << "\tlw $t1, " << pre << endl;
+			if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
+			else ftext << "\tlw $t2, " << id << endl;
 			ftext << "\tdiv $t3, $t1, $t2\n";
 		}
 		return "$t3";
@@ -301,7 +316,7 @@ string SymbolTable::ExprIdTail(string pre){
 		cin >> n >> gram; // )
 		ftext << "\tjal " << pre << endl;
 		ftext << "\t# move function return to $t6\n";
-		ftext << "\tlw $t6, $v0\n";
+		ftext << "\tmove $t6, $v0\n";
 		string id = Expr2("$t6");
 		return id;
 	}
@@ -319,8 +334,8 @@ string SymbolTable::ExprIdTail(string pre){
 			ftext << "\tadd $t4, $t4, $t4\n"; // index 8x
 		}
 		ftext << "\tadd $t5, $t4, $t5\n";
-		cin >> n >> gram; ExprArrayTail("0($t5)");
-		return "0($t5)";
+		cin >> n >> gram; ExprArrayTail("$t5");
+		return "$t5";
 	}
 	else if(gram=="="){
 		cin >> n >> gram; string id = Expr();
@@ -335,7 +350,8 @@ string SymbolTable::ExprIdTail(string pre){
         ft.close();*/
         //id = caculateExp();
 		ftext << "\t# Equal\n";
-		ftext << "\tlw $t1, " << id << endl;
+		if(id[0]=='$') ftext << "\tmove $t1, " << id << endl;
+		else ftext << "\tlw $t1, " << id << endl;
 		ftext << "\tsw $t1, " << pre << endl;
 	}
 	return "epsilon";
@@ -422,26 +438,34 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 
 	if(op=="+"){
 		ftext << "\t# Add\n";
-		ftext << "\tlw $t1, " << pre << endl;
-		ftext << "\tlw $t2, " << id << endl;
+		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
+		else ftext << "\tlw $t1, " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
+		else ftext << "\tlw $t2, " << id << endl;
 		ftext << "\tadd $t3, $t1, $t2\n";
 	}
 	else if(op=="-"){
 		ftext << "\t# Sub\n";
-		ftext << "\tlw $t1, " << pre << endl;
-		ftext << "\tlw $t2, " << id << endl;
+		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
+		else ftext << "\tlw $t1, " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
+		else ftext << "\tlw $t2, " << id << endl;
 		ftext << "\tsub $t3, $t1, $t2\n"; 
 	}
 	else if(op=="*"){
 		ftext << "\t# Mult\n";
-		ftext << "\tlw $t1, " << pre << endl;
-		ftext << "\tlw $t2, " << id << endl;
+		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
+		else ftext << "\tlw $t1, " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
+		else ftext << "\tlw $t2, " << id << endl;
 		ftext << "\tmul $t3, $t1, $t2\n";
 	}
 	else if(op=="/"){
 		ftext << "\t# Div\n";
-		ftext << "\tlw $t1, " << pre << endl;
-		ftext << "\tlw $t2, " << id << endl;
+		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
+		else ftext << "\tlw $t1, " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
+		else ftext << "\tlw $t2, " << id << endl;
 		ftext << "\tdiv $t3, $t1, $t2\n";
 	}
     else
@@ -464,7 +488,8 @@ void SymbolTable::ExprArrayTail(string pre){
 	else if(gram=="="){
 		cin >> n >> gram; string id = Expr();
 		ftext << "\t# Equal\n";
-		ftext << "\tlw $t1, " << id << endl;
+		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
+		else ftext << "\tlw $t1, " << pre << endl;
 		ftext << "\tsw $t1, " << pre << endl;
 	}
 }
@@ -473,7 +498,8 @@ void SymbolTable::ExprListTail(int i){
 	int n; string gram; cin >> n >> gram; //Expr
 	string id=Expr();
 	ftext << "\t# move parameter to $ai\n";
-	ftext << "\tlw $a" << i << ", " << id << endl;
+	if(id[0]=='$') ftext << "\tmove $a, " << i << ", " << id << endl;
+	else ftext << "\tlw $a, " << i << ", " << id << endl;
 	cin >> n >> gram; //ExprListTail'
 	cin >> n >> gram;
 	if(gram==","){

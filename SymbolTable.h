@@ -11,7 +11,7 @@ class SymbolTable{
 	public:
 		SymbolTable(){
 			maxScope=-1; 
-			ftext.open(".text", ios::out);
+			ftext.open("main.asm", ios::out);
 			if(!ftext){cerr << "Can't open .text!\n"; exit(1);}
 		}
 		void findSymbolTable();
