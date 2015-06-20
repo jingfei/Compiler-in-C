@@ -27,13 +27,7 @@ void SymbolTable::newScope(string index, bool moveStk){
 		stk.push(pair<int,string>(n,gram));
 		if(gram[0]=='{'){ 
 			//			ftext << "Symbol" << (moveStk ? "true" : "false") << endl;
-			if(new_index[0]=='i' && new_index[1]=='f')
-				newScope(new_index, false); 
-			else if(new_index[0]=='w' && new_index[1]=='h' && new_index[2]=='i'
-					&& new_index[3]=='l' && new_index[4]=='e')
-				newScope(new_index, false);
-			else
-				newScope(new_index, moveStk);
+			newScope(new_index, moveStk);
 		}
 		else if(gram=="Type"){ // new var (for symbol table)
 			stk.pop();
@@ -74,6 +68,7 @@ void SymbolTable::newScope(string index, bool moveStk){
 					ftext << "\tsw $t3, 12($sp)\n";
 					ftext << "\tsw $t4, 16($sp)\n";
 				}
+				else moveStk=false;
 				//				ftext << "func" << (moveStk ? "true" : "false") << endl;
 			}
 			else{  // arr
