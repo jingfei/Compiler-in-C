@@ -338,7 +338,6 @@ string SymbolTable::ExprIdTail(string pre){
 	int n; string gram; cin >> n >> gram;
 	if(gram=="Expr'"){
 		string id = Expr2(pre);
-        
 		return id;
 	}
 	else if(gram=="("){
@@ -351,6 +350,8 @@ string SymbolTable::ExprIdTail(string pre){
 		ftext << "\tmove $t6, $v0\n";
 		cin >> n >> gram; // Expr'
 		string id = Expr2("$t6");
+        while(!inorderExp.empty()) inorderExp.pop();
+        inorderExp.push("$t6");
 		return id;
 	}
 	else if(gram=="["){
