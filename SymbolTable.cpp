@@ -10,6 +10,8 @@
 #include "SymbolTable.h"
 using namespace std;
 
+int paramNum;
+
 void SymbolTable::findSymbolTable(){
 	ftext << ".text\n";
 	newScope("0",false);
@@ -43,7 +45,11 @@ void SymbolTable::newScope(string index, bool moveStk){
 			// symbol name
 			cin >> n >> gram;
 			string index = gram; // + to_string( scope.top().first );
-			if(!stk.empty() && stk.top().second=="ParamDecl") index = gram; // + to_string(maxScope+1); // param
+			if(!stk.empty() && stk.top().second=="ParamDecl"){ 
+				index = gram; // + to_string(maxScope+1); // param
+				ftext << "\t# move function parameter\n";
+				ftext << "\tsw $a" << paramNum++ << ", " << gram /*symbol*/ << endl;
+			}
 			vSymTable.push_back(&symtable[index]);
 			symtable[index].symbol=gram;
 			symtable[index].type=type;
@@ -58,6 +64,7 @@ void SymbolTable::newScope(string index, bool moveStk){
 				symtable[index].func=true;
 				symtable[index].func_scope=maxScope+1;
 				new_index = index;
+				paramNum=0;
 				ftext << symtable[index].symbol << ":\n";
 				if(symtable[index].symbol!="main"){
 					moveStk=true;
