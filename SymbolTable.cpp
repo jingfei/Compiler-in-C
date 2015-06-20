@@ -252,12 +252,10 @@ string SymbolTable::Expr(){
         inorder2postorder();
         id = caculateExp();
 		cin >> n >> gram; // )
-		ftext << " bf ";
-        cin >> n >> gram; id = Expr2(id);
-        ftext << " af ";
         inorderExp = inStack.top();
         postorderExp = postStack.top();
         inStack.pop(); postStack.pop();
+        cin >> n >> gram; id = Expr2(id);
 		return id;
 	}
 	else if(gram=="id"){
