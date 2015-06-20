@@ -245,16 +245,19 @@ string SymbolTable::Expr(){
 		return id;
 	}
 	else if(gram=="("){
-		cin >> n >> gram; string id = Expr(); 
-		cin >> n >> gram; // )
-        inStack.push(inorderExp);
+        inStack.push(inorderExp); postStack.push(postorderExp);
         while(!inorderExp.empty()) inorderExp.pop();
-        postStack.push(postorderExp);
         while(!postorderExp.empty()) postorderExp.pop();
-		cin >> n >> gram; id = Expr2(id);
+		cin >> n >> gram; string id = Expr(); 
         inorder2postorder();
         id = caculateExp();
-        
+		cin >> n >> gram; // )
+		ftext << " bf ";
+        cin >> n >> gram; id = Expr2(id);
+        ftext << " af ";
+        inorderExp = inStack.top();
+        postorderExp = postStack.top();
+        inStack.pop(); postStack.pop();
 		return id;
 	}
 	else if(gram=="id"){
@@ -354,7 +357,8 @@ string SymbolTable::ExprIdTail(string pre){
 		id = postorderExp.empty() ? id : caculateExp();
 		ftext << "\t# move to array loc\n";
 		ftext << "\tla $t5, " << pre << endl;
-		ftext << "\tli $t4, " << id << endl;
+		if(pre[0] == '$') ftext << "\tmove $t1, " << id << endl;
+        else ftext << "\tli $t4, " << id << endl;
 		ftext << "\tadd $t4, $t4, $t4\n"; // double the index
 		ftext << "\tadd $t4, $t4, $t4\n"; // index 4x
 		if(symtable[pre].type=="double"){
@@ -389,7 +393,7 @@ string SymbolTable::ExprIdTail(string pre){
 		id = postorderExp.empty() ? id : caculateExp();
 		ftext << "\t# Equal\n";
 		if(id[0]=='$') ftext << "\tmove $t1, " << id << endl;
-		else ftext << "\tlw $t1, " << id << endl;
+		else ftext << "\tli $t1, " << id << endl;
 		if(pre[0]=='$') ftext << "\tmove " << pre << ", $t1\n";
 		else ftext << "\tsw $t1, " << pre << endl;
 	}
@@ -513,7 +517,7 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 
 bool SymbolTable::isNumber(string item){
 	for(int i=0; i<item.length(); i++)
-		if(!isdigit(item[i]) || item[i]!='.')
+		if(!isdigit(item[i]) && item[i]!='.')
 			return false;
 	return true;
 }
