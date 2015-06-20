@@ -229,11 +229,14 @@ string SymbolTable::Expr(){
 		cin >> n >> gram; string id = Expr();
 		if(s=="-"){
 			ftext << "\t# Unary minus\n";
+            id = inorderExp.top();
+            inorderExp.pop();
 			if(id[0]=='$') ftext << "\tmove $v0, " << id << endl;
 			else ftext << "\tlw $v0, " << id << endl;
 			ftext << "\tsub $t1, $zero, $t1\n";
 			if(id[0]=='$') ftext << "\tmove " << id << ", $t1\n";
 			else ftext << "\tsw $t1, " << id << endl;
+            inorderExp.push("$t1");
 		}
 		else if(s=="!"){
 			ftext << "\t# Not\n";
