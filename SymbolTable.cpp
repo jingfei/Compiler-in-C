@@ -226,12 +226,17 @@ string SymbolTable::Expr(){
 			ftext << "\t# Unary minus\n";
             id = inorderExp.top();
             inorderExp.pop();
+            if(isNumber(id)){
+                ftext << "\t# move num\n";
+                ftext << "\tli $t4, " << id << endl;
+                id = "$t4";
+            }
 			if(id[0]=='$') ftext << "\tmove $v0, " << id << endl;
 			else ftext << "\tlw $v0, " << id << endl;
 			ftext << "\tsub $t1, $zero, $t1\n";
 			if(id[0]=='$') ftext << "\tmove " << id << ", $t1\n";
 			else ftext << "\tsw $t1, " << id << endl;
-            inorderExp.push("$t1");
+            inorderExp.push("$t4");
 		}
 		else if(s=="!"){
 			ftext << "\t# Not\n";
