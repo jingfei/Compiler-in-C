@@ -225,14 +225,16 @@ string SymbolTable::Expr(){
 			if(id[0]=='$') ftext << "\tmove $v0, " << id << endl;
 			else ftext << "\tlw $v0, " << id << endl;
 			ftext << "\tsub $t1, $zero, $t1\n";
-			ftext << "\tsw $t1, " << id << endl;
+			if(id[0]=='$') ftext << "\tmove " << id << ", $t1\n";
+			else ftext << "\tsw $t1, " << id << endl;
 		}
 		else if(s=="!"){
 			ftext << "\t# Not\n";
 			if(id[0]=='$') ftext << "\tmove $v0, " << id << endl;
 			else ftext << "\tlw $v0, " << id << endl;
 			ftext << "\tnot $t1, $t1\n";
-			ftext << "\tsw $t1, " << id << endl;
+			if(id[0]=='$') ftext << "\tmove " << id << ", $t1\n";
+			else ftext << "\tsw $t1, " << id << endl;
 		}
 		return id;
 	}
@@ -388,7 +390,8 @@ string SymbolTable::ExprIdTail(string pre){
 		ftext << "\t# Equal\n";
 		if(id[0]=='$') ftext << "\tmove $t1, " << id << endl;
 		else ftext << "\tlw $t1, " << id << endl;
-		ftext << "\tsw $t1, " << pre << endl;
+		if(pre[0]=='$') ftext << "\tmove " << pre << ", $t1\n";
+		else ftext << "\tsw $t1, " << pre << endl;
 	}
 	return "epsilon";
 }
@@ -527,8 +530,10 @@ void SymbolTable::ExprArrayTail(string pre){
 		while(!inorderExp.empty()) inorderExp.pop();
 		id = caculateExp();
 		ftext << "\t# Equal\n";
-		ftext << "\tlw $t1, " << id << endl;
-		ftext << "\tsw $t1, " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove $t1, " << id << endl;
+		else ftext << "\tlw $t1, " << id << endl;
+		if(pre[0]=='$') ftext << "\tmove " << pre << ", $t1\n";
+		else ftext << "\tsw $t1, " << pre << endl;
 	}
 }
 
