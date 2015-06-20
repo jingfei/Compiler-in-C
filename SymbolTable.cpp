@@ -10,7 +10,7 @@
 #include "SymbolTable.h"
 using namespace std;
 
-int paramNum;
+int paramNum,opNum;
 
 void SymbolTable::findSymbolTable(){
 	ftext << ".text\n";
@@ -525,8 +525,26 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		else ftext << "\tlw $t2, " << id << endl;
 		ftext << "\tdiv $t3, $t2, $t1\n";
 	}
-	else
-		ftext << "op is " << op << endl; 
+	else{
+		ftext << "\t# op ==\n";
+		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
+		else ftext << "\tlw $t1, " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
+		else ftext << "\tlw $t2, " << id << endl;
+		if(op=="==") ftext << "\tbeq $t1, $t2, isTrue" << opNum << endl;
+		else if(op=="!=") ftext << "\tbne $t1, $t2, isTrue" << opNum << endl;
+		else if(op=="<") ftext << "\tblt $t1, $t2, isTrue" << opNum << endl;
+		else if(op=="<=") ftext << "\tble $t1, $t2, isTrue" << opNum << endl;
+		else if(op=="<") ftext << "\tbgt $t1, $t2, isTrue" << opNum << endl;
+		else if(op=="<=") ftext << "\tbge $t1, $t2, isTrue" << opNum << endl;
+		ftext << "\tli $t3, 0\n";
+		ftext << "\tj jFalse" << opNum << endl;
+		ftext << "isTrue" << opNum << ":\n";
+		ftext << "\tli $t3, 1\n";
+		ftext << "jFalse" << opNum++ << ":\n";
+	}
+//	else
+//		ftext << "op is " << op << endl; 
 	return "$t3";
 }
 
