@@ -49,14 +49,15 @@ class SymbolTable{
 		string Expr();
 		string Expr2(string,bool isNum=false);
 		string ExprIdTail(string);
+		void ExprArrayTail(string);
+		void ExprListTail(int);
+        
         /* for expersion */
         void inorder2postorder();
         int priority(string);
         string caculateExp();
         string getResult(string, bool, string, bool, string);
         bool isNumber(string);
-		void ExprArrayTail(string);
-		void ExprListTail(int);
 };
 
 #endif
