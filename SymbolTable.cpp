@@ -489,7 +489,7 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		else ftext << "\tlw $t1, " << pre << endl;
 		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
 		else ftext << "\tlw $t2, " << id << endl;
-		ftext << "\tadd $t3, $t1, $t2\n";
+		ftext << "\tadd $t3, $t2, $t1\n";
 	}
 	else if(op=="-"){
 		ftext << "\t# Sub\n";
@@ -497,7 +497,7 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		else ftext << "\tlw $t1, " << pre << endl;
 		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
 		else ftext << "\tlw $t2, " << id << endl;
-		ftext << "\tsub $t3, $t1, $t2\n"; 
+		ftext << "\tsub $t3, $t2, $t1\n"; 
 	}
 	else if(op=="*"){
 		ftext << "\t# Mult\n";
@@ -505,7 +505,7 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		else ftext << "\tlw $t1, " << pre << endl;
 		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
 		else ftext << "\tlw $t2, " << id << endl;
-		ftext << "\tmul $t3, $t1, $t2\n";
+		ftext << "\tmul $t3, $t2, $t1\n";
 	}
 	else if(op=="/"){
 		ftext << "\t# Div\n";
@@ -513,7 +513,7 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		else ftext << "\tlw $t1, " << pre << endl;
 		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
 		else ftext << "\tlw $t2, " << id << endl;
-		ftext << "\tdiv $t3, $t1, $t2\n";
+		ftext << "\tdiv $t3, $t2, $t1\n";
 	}
 	else
 		ftext << "op is " << op << endl; 
