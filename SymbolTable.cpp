@@ -332,7 +332,6 @@ string SymbolTable::ExprIdTail(string pre){
 		return id;
 	}
 	else if(gram=="("){
-		cin >> n >> gram; 
 		cin >> n >> gram; // ExprList
 		cin >> n >> gram; // grammar in ExprList (ExprListTail or epsilon)
 		if(gram=="ExprListTail") ExprListTail(0);
@@ -340,6 +339,7 @@ string SymbolTable::ExprIdTail(string pre){
 		ftext << "\tjal " << pre << endl;
 		ftext << "\t# move function return to $t6\n";
 		ftext << "\tmove $t6, $v0\n";
+		cin >> n >> gram; // Expr'
 		string id = Expr2("$t6");
 		return id;
 	}
