@@ -331,7 +331,6 @@ string SymbolTable::ExprIdTail(string pre){
 	int n; string gram; cin >> n >> gram;
 	if(gram=="Expr'"){
 		string id = Expr2(pre);
-        
 		return id;
 	}
 	else if(gram=="("){
@@ -344,6 +343,8 @@ string SymbolTable::ExprIdTail(string pre){
 		ftext << "\tmove $t6, $v0\n";
 		cin >> n >> gram; // Expr'
 		string id = Expr2("$t6");
+        while(!inorderExp.empty()) inorderExp.pop();
+        inorderExp.push("$t6");
 		return id;
 	}
 	else if(gram=="["){
@@ -374,13 +375,13 @@ string SymbolTable::ExprIdTail(string pre){
 		cin >> n >> gram; string id = Expr();
 		while(!postorderExp.empty())
 			postorderExp.pop();
-		/*fstream ft1;
+		fstream ft1;
 		  ft1.open("exp1.txt", ios::out);
 		  while(!inorderExp.empty()){
 		  ft1 << inorderExp.top() << " ";
 		  inorderExp.pop();
 		  }
-		  ft1<< endl;*/
+		  ft1<< endl;
 		inorder2postorder();
 		while(!inorderExp.empty())
 			inorderExp.pop();
