@@ -42,8 +42,10 @@ class SymbolTable{
 		};
 		map <string,SymTable> symtable; 
 		vector<SymTable*> vSymTable;
-        stack<string> inorderExp;
-        queue<string> postorderExp;
+        stack<string>inorderExp;
+        queue<string>postorderExp;
+        stack<stack<string> >inStack;
+        stack<queue<string> >postStack;
 		/* for grammar */
 		string Stmt(string bkstmt="");
 		string Expr();

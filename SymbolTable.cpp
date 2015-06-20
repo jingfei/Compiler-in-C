@@ -239,8 +239,9 @@ string SymbolTable::Stmt(string bkstmt){
         else if(gram=="("){
             cin >> n >> gram; string id = Expr(); 
             cin >> n >> gram; // )
-            //inorderExp.push("(");
+            //inorderExp.push(")");
             cin >> n >> gram; id = Expr2(id);
+            //inorderExp.push("(");
             return id;
         }
         else if(gram=="id"){
@@ -248,8 +249,6 @@ string SymbolTable::Stmt(string bkstmt){
             cin >> n >> gram; id = ExprIdTail(id);
             return id;
         }
-        else if(gram==")");
-        //inorderExp.push(")");
         return "epsilon";
     }
 
@@ -354,13 +353,13 @@ string SymbolTable::Stmt(string bkstmt){
             cin >> n >> gram; string id = Expr();
             while(!postorderExp.empty())
                 postorderExp.pop();
-            /*fstream ft1;
+            fstream ft1;
               ft1.open("exp1.txt", ios::out);
               while(!inorderExp.empty()){
               ft1 << inorderExp.top() << " ";
               inorderExp.pop();
               }
-              ft1<< endl;*/
+              ft1<< endl;
             inorder2postorder();
             cout << "in = after turn to post\n";
             while(!inorderExp.empty())
@@ -372,7 +371,7 @@ string SymbolTable::Stmt(string bkstmt){
               postorderExp.pop();
               }
               ft << endl;*/
-            id = caculateExp();
+            id = postorderExp.empty() ? id : caculateExp();
             ftext << "\t# Equal\n";
             ftext << "\tlw $t1, " << id << endl;
             ftext << "\tsw $t1, " << pre << endl;
