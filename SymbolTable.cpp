@@ -291,8 +291,8 @@
         }
         else if(gram=="epsilon"){
             if(isNum){
-                ftext << "\t# move num\n";
-                ftext << "\tli $t4, " << pre << endl;
+                //ftext << "\t# move num\n";
+                //ftext << "\tli $t4, " << pre << endl;
                 pre="$t4";
             }
             return pre;
@@ -315,6 +315,12 @@
             ftext << "\tjal " << pre << endl;
             ftext << "\t# move function return to $t6\n";
             ftext << "\tlw $t6, $v0\n";
+            //while(!postorderExp.empty())
+              //  postorderExp.pop();
+           // inorder2postorder();
+          //  while(!inorderExp.empty())
+            //    inorderExp.pop();
+           // id = caculateExp();
             string id = Expr2("$t6");
             return id;
         }
@@ -322,6 +328,12 @@
             cin >> n >> gram; string id = Expr();
             cin >> n >> gram; // ]
             // get pre[id]
+            while(!postorderExp.empty())
+                postorderExp.pop();
+            inorder2postorder();
+            while(!inorderExp.empty())
+                inorderExp.pop();
+            id = caculateExp();
             ftext << "\t# move to array loc\n";
             ftext << "\tla $t5, " << pre << endl;
             ftext << "\tli $t4, " << id << endl;
@@ -371,11 +383,11 @@
                     temp.pop();
                 }
                 else if(item == "+" || item == "-" || item == "*" || item == "/"){
-                    string item2 = inorderExp.top();
+                    string item2 = temp.empty() ? "-1" : temp.top();
                     while(priority(item2) > priority(item)){
                         postorderExp.push(item2);
-                        temp.pop();
-                        item2 = temp.top();
+                            temp.pop();
+                        item2 = temp.empty() ? "-1" : temp.top();
                     }
                     temp.push(item);
                 }
@@ -409,10 +421,8 @@ string SymbolTable::caculateExp(){
                 postorderExp.pop();
                 item = postorderExp.front();
             }
-            string pre = temp.top();
-            temp.pop();
-            string id = temp.top();
-            temp.pop();
+            string pre = temp.top(); temp.pop();
+            string id = temp.top(); temp.pop();
             string result = getResult(pre, isNumber(pre), id, isNumber(id), item);
             temp.push(result);
             postorderExp.pop();
@@ -476,6 +486,12 @@ void SymbolTable::ExprArrayTail(string pre){
     }
     else if(gram=="="){
         cin >> n >> gram; string id = Expr();
+        while(!postorderExp.empty())
+            postorderExp.pop();
+        inorder2postorder();
+        while(!inorderExp.empty())
+            inorderExp.pop();
+        id = caculateExp();
         ftext << "\t# Equal\n";
         ftext << "\tlw $t1, " << id << endl;
         ftext << "\tsw $t1, " << pre << endl;
