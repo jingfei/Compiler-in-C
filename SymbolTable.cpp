@@ -394,8 +394,7 @@ string SymbolTable::ExprIdTail(string pre){
 		id = postorderExp.empty() ? id : caculateExp();
 		ftext << "\t# move to array loc\n";
 		ftext << "\tla $t5, " << pre << endl;
-		if(pre[0] == '$') ftext << "\tmove $t1, " << id << endl;
-        else ftext << "\tli $t4, " << id << endl;
+		//id: num -> $t4
 		ftext << "\tadd $t4, $t4, $t4\n"; // double the index
 		ftext << "\tadd $t4, $t4, $t4\n"; // index 4x
 		if(symtable[pre].type=="double"){
@@ -403,7 +402,7 @@ string SymbolTable::ExprIdTail(string pre){
 			ftext << "\tadd $t4, $t4, $t4\n"; // index 8x
 		}
 		ftext << "\tadd $t5, $t4, $t5\n";
-		cin >> n >> gram; ExprArrayTail("$t5");
+		cin >> n >> gram; ExprArrayTail("0($t5)");
 		return "$t5";
 	}
 	else if(gram=="="){
