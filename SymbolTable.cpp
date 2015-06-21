@@ -451,7 +451,7 @@ void SymbolTable::inorder2postorder(){
 					temp.pop();
 				}
 			}
-			else if(item == "+" || item == "-" || item == "*" || item == "/"){
+			else if(item == "+" || item == "-" || item == "*" || item == "/" || item == "==" || item == "!=" || item == "<" || item == "<=" || item == ">" || item == ">=" || item == "&&" || item == "||"){
 				string item2 = temp.empty() ? "-1" : temp.top();
 				while(priority(item2) > priority(item)){
 					postorderExp.push(item2);
@@ -498,7 +498,7 @@ string SymbolTable::caculateExp(){
 		string item = postorderExp.front();
         ftp3 << item <<" --out while\n";
 		while(!postorderExp.empty()){
-			while(item!="+" && item!="-" && item!="*" && item!="/"){
+			while(item!="+" && item!="-" && item!="*" && item!="/" && item!="==" && item!="!=" && item!="<" && item!="<=" && item!=">" && item!=">=" && item!="&&" && item!="||"){
 				temp.push(item);
 				postorderExp.pop();
 				item = postorderExp.front();
@@ -584,8 +584,8 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		else if(op=="!=") ftext << "\tbne $t1, $t2, isTrue" << opNum << endl;
 		else if(op=="<") ftext << "\tblt $t1, $t2, isTrue" << opNum << endl;
 		else if(op=="<=") ftext << "\tble $t1, $t2, isTrue" << opNum << endl;
-		else if(op=="<") ftext << "\tbgt $t1, $t2, isTrue" << opNum << endl;
-		else if(op=="<=") ftext << "\tbge $t1, $t2, isTrue" << opNum << endl;
+		else if(op==">") ftext << "\tbgt $t1, $t2, jFalse" << opNum << endl;
+		else if(op==">=") ftext << "\tbge $t1, $t2, jFalse" << opNum << endl;
 		else if(op=="||"){
 			ftext << "\tbne $t1, $zero, isTrue" << opNum << endl;
 			ftext << "\tbne $t2, $zero, isTrue" << opNum << endl;
