@@ -163,8 +163,27 @@ string SymbolTable::Stmt(string bkstmt){
 	}
 	else if(gram=="return"){
 		ftext << "\t# function return $v0\n";
+        while(!inorderExp.empty()) inorderExp.pop();
 		cin >> n >> gram; string id = Expr();
 		cin >> n >> gram; //;
+        while(!postorderExp.empty()) postorderExp.pop();
+		/*fstream ft1;
+		  ft1.open("exp1.txt", ios::out);
+		  while(!inorderExp.empty()){
+		  ft1 << inorderExp.top() << " ";
+		  inorderExp.pop();
+		  }
+		  ft1<< endl;*/
+        inorder2postorder();
+		/*fstream ft;
+		  ft.open("exp2.txt", ios::out);
+		  while(!postorderExp.empty()){
+		  ft << postorderExp.front() << " ";
+		  postorderExp.pop();
+		  }
+		  ft << endl;*/
+        while(!inorderExp.empty()) inorderExp.pop();
+        id = postorderExp.empty()?id:caculateExp();
 		if(id[0]=='$') ftext << "\tmove $v0, " << id << endl;
 		else ftext << "\tlw $v0, " << id << endl;
 	}
@@ -222,21 +241,20 @@ string SymbolTable::Expr(){
 	if(gram=="UnaryOp"){
 		cin >> n >> gram; string s = gram;
 		cin >> n >> gram; string id = Expr();
+        id = inorderExp.top();
+        inorderExp.pop();
+        if(isNumber(id)){
+            ftext << "\t# move num\n";
+            ftext << "\tli $t4, " << id << endl;
+            id = "$t4";
+        }
 		if(s=="-"){
 			ftext << "\t# Unary minus\n";
-            id = inorderExp.top();
-            inorderExp.pop();
-            if(isNumber(id)){
-                ftext << "\t# move num\n";
-                ftext << "\tli $t4, " << id << endl;
-                id = "$t4";
-            }
 			if(id[0]=='$') ftext << "\tmove $v0, " << id << endl;
 			else ftext << "\tlw $v0, " << id << endl;
 			ftext << "\tsub $t1, $zero, $t1\n";
 			if(id[0]=='$') ftext << "\tmove " << id << ", $t1\n";
 			else ftext << "\tsw $t1, " << id << endl;
-            inorderExp.push("$t4");
 		}
 		else if(s=="!"){
 			ftext << "\t# Not\n";
@@ -246,6 +264,7 @@ string SymbolTable::Expr(){
 			if(id[0]=='$') ftext << "\tmove " << id << ", $t1\n";
 			else ftext << "\tsw $t1, " << id << endl;
 		}
+        inorderExp.push(id);
 		return id;
 	}
 	else if(gram=="num"){
@@ -467,12 +486,16 @@ string SymbolTable::caculateExp(){
             else
                 return postorderExp.front(); 
 		stack<string> temp;
+        fstream ftp3;
+        ftp3.open("exp3.txt", ios::out);
 		string item = postorderExp.front();
+        ftp3 << item <<" --out while\n";
 		while(!postorderExp.empty()){
 			while(item!="+" && item!="-" && item!="*" && item!="/"){
 				temp.push(item);
 				postorderExp.pop();
 				item = postorderExp.front();
+                ftp3 << item << " -- in while while\n";
 			}
 			string pre = temp.top(); temp.pop();
 			string id = temp.top(); temp.pop();
@@ -480,6 +503,7 @@ string SymbolTable::caculateExp(){
 			temp.push(result);
 			postorderExp.pop();
 			item = postorderExp.front();
+            ftp3 << item << " -- in while\n";
 		}
 		return temp.top();
 	}
