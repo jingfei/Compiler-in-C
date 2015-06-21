@@ -18,7 +18,7 @@ void SymbolTable::findSymbolTable(){
 	newScope("0",false);
 }
 
-void SymbolTable::newScope(string index, bool moveStk){ 
+void SymbolTable::newScope(string index, bool moveStk, string bkstmt){ 
 	int n; string gram,new_index="";
 	stack< pair<int,string> > stk;
 	scope.push(pair<int,string>(++maxScope,index)); 
@@ -102,7 +102,7 @@ void SymbolTable::newScope(string index, bool moveStk){
 			//			ftext << (moveStk ? "true" : "false") << endl;
 			// read Stmt
 			cin >> n >> gram;
-			if(gram=="Stmt") new_index=Stmt();
+			if(gram=="Stmt") new_index=(bkstmt=="" ? Stmt() : Stmt(bkstmt) );
 		}
 		if(new_index=="if" || new_index=="while"){
 			new_index += to_string(maxScope+1);
@@ -203,11 +203,11 @@ string SymbolTable::Stmt(string bkstmt){
 		ftext << "\tlw $t1, " << id << endl;
 		ftext << "\tbeq $t1, $zero, Else" << to_string(maxScope+1) << endl;
 		cin >> n >> gram; Stmt(bkstmt);
-		ftext << "\tj EndIf" << to_string(maxScope+1) << endl;
+		ftext << "\tj EndIf" << to_string(scope.top().first+1) << endl;
 		cin >> n >> gram; // else
-		ftext << "Else" << to_string(maxScope) << ":\n";
+		ftext << "Else" << to_string(scope.top().first+1) << ":\n";
 		cin >> n >> gram; Stmt(bkstmt);
-		ftext << "EndIf" << to_string(maxScope) << ":\n";
+		ftext << "EndIf" << to_string(scope.top().first+1) << ":\n";
 	}
 	else if(gram=="while"){
 		cin >> n >> gram; // (
@@ -218,13 +218,13 @@ string SymbolTable::Stmt(string bkstmt){
 		ftext << "\tlw $t1, " << id << endl;
 		ftext << "\tbeq $t1, $zero, EndWhile" << to_string(maxScope+1) << endl;
 		cin >> n >> gram; Stmt("EndWhile"+to_string(maxScope+1));
-		ftext << "\tj While"+to_string(maxScope) << endl;
-		ftext << "EndWhile" << to_string(maxScope) << ":\n";
+		ftext << "\tj While"+to_string(scope.top().first+1) << endl;
+		ftext << "EndWhile" << to_string(scope.top().first+1) << ":\n";
 	}
 	else if(gram=="Block"){
 		cin >> n >> gram; // {
 		string new_index = "Block"+to_string(maxScope+1);
-		newScope(new_index, false); 
+		newScope(new_index, false, bkstmt); 
 	}
 	else if(gram=="print"){
 		cin >> n >> gram;

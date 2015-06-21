@@ -25,7 +25,7 @@ class SymbolTable{
 		/* for scope */
 		int maxScope;
 		stack< pair<int,string> > scope;
-		void newScope(string,bool);
+		void newScope(string,bool,string bkstmt="");
 		struct SymTable{
 			/* for table */
 			int scope;
