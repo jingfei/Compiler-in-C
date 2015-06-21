@@ -111,14 +111,17 @@ void SymbolTable::newScope(string index, bool moveStk){
 }
 
 void SymbolTable::printSymbolTable(){
-	for(auto i : vSymTable){
-		cout << setw(5)  << left << i->scope;
-		cout << setw(10) << left << i->symbol;
-		cout << setw(8)  << left << i->type;
-		cout << setw(8)  << left << (i->arr ? "true" : "false");
-		cout << setw(8)  << left << (i->func ? "true" : "false"); 
-		cout << endl;
+	fstream fSymbol;
+    fSymbol.open("symbol_table.txt", ios::out);
+    for(auto i : vSymTable){
+		fSymbol << setw(5)  << left << i->scope;
+		fSymbol << setw(10) << left << i->symbol;
+		fSymbol << setw(8)  << left << i->type;
+		fSymbol << setw(8)  << left << (i->arr ? "true" : "false");
+	    fSymbol << setw(8)  << left << (i->func ? "true" : "false"); 
+		fSymbol << endl;
 	}
+    fSymbol.close();
 }
 
 void SymbolTable::genDotDataFile(){
@@ -250,16 +253,16 @@ string SymbolTable::Expr(){
         }
 		if(s=="-"){
 			ftext << "\t# Unary minus\n";
-			if(id[0]=='$') ftext << "\tmove $v0, " << id << endl;
-			else ftext << "\tlw $v0, " << id << endl;
+			if(id[0]=='$') ftext << "\tmove $t1, " << id << endl;
+			else ftext << "\tlw $t1, " << id << endl;
 			ftext << "\tsub $t1, $zero, $t1\n";
 			if(id[0]=='$') ftext << "\tmove " << id << ", $t1\n";
 			else ftext << "\tsw $t1, " << id << endl;
 		}
 		else if(s=="!"){
 			ftext << "\t# Not\n";
-			if(id[0]=='$') ftext << "\tmove $v0, " << id << endl;
-			else ftext << "\tlw $v0, " << id << endl;
+			if(id[0]=='$') ftext << "\tmove $t1, " << id << endl;
+			else ftext << "\tlw $t1, " << id << endl;
 			ftext << "\tnot $t1, $t1\n";
 			if(id[0]=='$') ftext << "\tmove " << id << ", $t1\n";
 			else ftext << "\tsw $t1, " << id << endl;
@@ -615,3 +618,30 @@ void SymbolTable::ExprListTail(int i){
 	}
 }
 
+void SymbolTable::typeChecking(string a, string b){
+    string typeA, typeB, idA = a, idB=b;
+    if(isNumber(a)){
+        if(isDouble(a)) typeA = "double";
+        else typeA = "int";
+    }
+    else if(a[0] == '$'){
+        idA = "temp";
+    }
+    else typeA = symtable[a].type;
+    if(isNumber(b)){
+        if(isDouble(b)) typeB = "double";
+        else typeB = "int";
+    }
+    else if(b[0] == '$'){
+        idB = "temp";
+    }
+    else typeB = symtable[b].type;
+    if(typeA!=typeB) cout << "warning(scope ) : " << idA << typeA << " , " << idB << typeB << endl;
+}
+
+bool SymbolTable::isDouble(string num){
+    for(int i=0; i<num.length(); i++)
+        if(num[i] == '.')
+            return true;
+    return false;
+}
