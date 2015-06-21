@@ -562,10 +562,10 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 	}
 	else if(op=="&&"){
 		ftext << "\t# op &&\n";
-		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
-		else ftext << "\tlw $t1, " << pre << endl;
-		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
-		else ftext << "\tlw $t2, " << id << endl;
+		if(pre[0]=='$') ftext << "\tmove $t2, " << pre << endl;
+		else ftext << "\tlw $t2, " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove $t1, " << id << endl;
+		else ftext << "\tlw $t1, " << id << endl;
 		ftext << "\tbne $t1, $zero, isFalse" << opNum << endl;
 		ftext << "\tbne $t2, $zero, isFalse" << opNum << endl;
 		ftext << "\tli $t3, 1\n";
@@ -576,16 +576,16 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 	}
 	else{
 		ftext << "\t# op " << op << endl;
-		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
-		else ftext << "\tlw $t1, " << pre << endl;
-		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
-		else ftext << "\tlw $t2, " << id << endl;
+		if(pre[0]=='$') ftext << "\tmove $t2, " << pre << endl;
+		else ftext << "\tlw $t2, " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove $t1, " << id << endl;
+		else ftext << "\tlw $t1, " << id << endl;
 		if(op=="==") ftext << "\tbeq $t1, $t2, isTrue" << opNum << endl;
 		else if(op=="!=") ftext << "\tbne $t1, $t2, isTrue" << opNum << endl;
 		else if(op=="<") ftext << "\tblt $t1, $t2, isTrue" << opNum << endl;
 		else if(op=="<=") ftext << "\tble $t1, $t2, isTrue" << opNum << endl;
-		else if(op==">") ftext << "\tbgt $t1, $t2, jFalse" << opNum << endl;
-		else if(op==">=") ftext << "\tbge $t1, $t2, jFalse" << opNum << endl;
+		else if(op==">") ftext << "\tbgt $t1, $t2, isTrue" << opNum << endl;
+		else if(op==">=") ftext << "\tbge $t1, $t2, isTrue" << opNum << endl;
 		else if(op=="||"){
 			ftext << "\tbne $t1, $zero, isTrue" << opNum << endl;
 			ftext << "\tbne $t2, $zero, isTrue" << opNum << endl;
