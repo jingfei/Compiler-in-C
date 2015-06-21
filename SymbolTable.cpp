@@ -10,9 +10,10 @@
 #include "SymbolTable.h"
 using namespace std;
 
-int paramNum,opNum;
+int paramNum,opNum,funcNum;
 
 void SymbolTable::findSymbolTable(){
+	opNum = funcNum = 0;
 	ftext << ".text\n";
 	newScope("0",false);
 }
@@ -367,7 +368,9 @@ string SymbolTable::ExprIdTail(string pre){
 		cin >> n >> gram; // grammar in ExprList (ExprListTail or epsilon)
 		if(gram=="ExprListTail") ExprListTail(0);
 		cin >> n >> gram; // )
+		ftext << "\tmove $s" << funcNum++ <<", $ra\n";
 		ftext << "\tjal " << pre << endl;
+		ftext << "\tmove $ra, $s" << --funcNum << endl;
 		ftext << "\t# move function return to $t6\n";
 		ftext << "\tmove $t6, $v0\n";
 		cin >> n >> gram; // Expr'
