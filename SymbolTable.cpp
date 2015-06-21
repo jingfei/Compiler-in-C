@@ -558,8 +558,22 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		else ftext << "\tlw $t2, " << id << endl;
 		ftext << "\tdiv $t3, $t2, $t1\n";
 	}
+	else if(op=="&&"){
+		ftext << "\t# op &&\n";
+		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
+		else ftext << "\tlw $t1, " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
+		else ftext << "\tlw $t2, " << id << endl;
+		ftext << "\tbne $t1, $zero, isFalse" << opNum << endl;
+		ftext << "\tbne $t2, $zero, isFalse" << opNum << endl;
+		ftext << "\tli $t3, 1\n";
+		ftext << "\tj jTrue" << opNum << endl;
+		ftext << "isFalse" << opNum << ":\n";
+		ftext << "\tli $t3, 0\n";
+		ftext << "jTrue" << opNum++ << ":\n";
+	}
 	else{
-		ftext << "\t# op ==\n";
+		ftext << "\t# op " << op << endl;
 		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
 		else ftext << "\tlw $t1, " << pre << endl;
 		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
@@ -570,6 +584,10 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		else if(op=="<=") ftext << "\tble $t1, $t2, isTrue" << opNum << endl;
 		else if(op=="<") ftext << "\tbgt $t1, $t2, isTrue" << opNum << endl;
 		else if(op=="<=") ftext << "\tbge $t1, $t2, isTrue" << opNum << endl;
+		else if(op=="||"){
+			ftext << "\tbne $t1, $zero, isTrue" << opNum << endl;
+			ftext << "\tbne $t2, $zero, isTrue" << opNum << endl;
+		}
 		ftext << "\tli $t3, 0\n";
 		ftext << "\tj jFalse" << opNum << endl;
 		ftext << "isTrue" << opNum << ":\n";
