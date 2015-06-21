@@ -502,7 +502,7 @@ string SymbolTable::caculateExp(){
 			string result = getResult(pre, isNumber(pre), id, isNumber(id), item);
 			temp.push(result);
 			postorderExp.pop();
-			item = postorderExp.front();
+            if(!postorderExp.empty()) item = postorderExp.front();
             ftp3 << item << " -- in while\n";
 		}
 		return temp.top();
