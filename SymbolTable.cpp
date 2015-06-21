@@ -18,7 +18,7 @@ void SymbolTable::findSymbolTable(){
 	newScope("0",false);
 }
 
-void SymbolTable::newScope(string index, bool moveStk){ 
+void SymbolTable::newScope(string index, bool moveStk, string bkstmt){ 
 	int n; string gram,new_index="";
 	stack< pair<int,string> > stk;
 	scope.push(pair<int,string>(++maxScope,index)); 
@@ -102,7 +102,7 @@ void SymbolTable::newScope(string index, bool moveStk){
 			//			ftext << (moveStk ? "true" : "false") << endl;
 			// read Stmt
 			cin >> n >> gram;
-			if(gram=="Stmt") new_index=Stmt();
+			if(gram=="Stmt") new_index=(bkstmt=="" ? Stmt() : Stmt(bkstmt) );
 		}
 		if(new_index=="if" || new_index=="while"){
 			new_index += to_string(maxScope+1);
@@ -203,11 +203,11 @@ string SymbolTable::Stmt(string bkstmt){
 		ftext << "\tlw $t1, " << id << endl;
 		ftext << "\tbeq $t1, $zero, Else" << to_string(maxScope+1) << endl;
 		cin >> n >> gram; Stmt(bkstmt);
-		ftext << "\tj EndIf" << to_string(maxScope+1) << endl;
+		ftext << "\tj EndIf" << to_string(scope.top().first+1) << endl;
 		cin >> n >> gram; // else
-		ftext << "Else" << to_string(maxScope) << ":\n";
+		ftext << "Else" << to_string(scope.top().first+1) << ":\n";
 		cin >> n >> gram; Stmt(bkstmt);
-		ftext << "EndIf" << to_string(maxScope) << ":\n";
+		ftext << "EndIf" << to_string(scope.top().first+1) << ":\n";
 	}
 	else if(gram=="while"){
 		cin >> n >> gram; // (
@@ -218,13 +218,13 @@ string SymbolTable::Stmt(string bkstmt){
 		ftext << "\tlw $t1, " << id << endl;
 		ftext << "\tbeq $t1, $zero, EndWhile" << to_string(maxScope+1) << endl;
 		cin >> n >> gram; Stmt("EndWhile"+to_string(maxScope+1));
-		ftext << "\tj While"+to_string(maxScope) << endl;
-		ftext << "EndWhile" << to_string(maxScope) << ":\n";
+		ftext << "\tj While"+to_string(scope.top().first+1) << endl;
+		ftext << "EndWhile" << to_string(scope.top().first+1) << ":\n";
 	}
 	else if(gram=="Block"){
 		cin >> n >> gram; // {
 		string new_index = "Block"+to_string(maxScope+1);
-		newScope(new_index, false); 
+		newScope(new_index, false, bkstmt); 
 	}
 	else if(gram=="print"){
 		cin >> n >> gram;
@@ -394,8 +394,7 @@ string SymbolTable::ExprIdTail(string pre){
 		id = postorderExp.empty() ? id : caculateExp();
 		ftext << "\t# move to array loc\n";
 		ftext << "\tla $t5, " << pre << endl;
-		if(pre[0] == '$') ftext << "\tmove $t1, " << id << endl;
-        else ftext << "\tli $t4, " << id << endl;
+		//id: num -> $t4
 		ftext << "\tadd $t4, $t4, $t4\n"; // double the index
 		ftext << "\tadd $t4, $t4, $t4\n"; // index 4x
 		if(symtable[pre].type=="double"){
@@ -403,7 +402,7 @@ string SymbolTable::ExprIdTail(string pre){
 			ftext << "\tadd $t4, $t4, $t4\n"; // index 8x
 		}
 		ftext << "\tadd $t5, $t4, $t5\n";
-		cin >> n >> gram; ExprArrayTail("$t5");
+		cin >> n >> gram; ExprArrayTail("0($t5)");
 		return "$t5";
 	}
 	else if(gram=="="){
@@ -561,8 +560,22 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		else ftext << "\tlw $t2, " << id << endl;
 		ftext << "\tdiv $t3, $t2, $t1\n";
 	}
+	else if(op=="&&"){
+		ftext << "\t# op &&\n";
+		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
+		else ftext << "\tlw $t1, " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
+		else ftext << "\tlw $t2, " << id << endl;
+		ftext << "\tbne $t1, $zero, isFalse" << opNum << endl;
+		ftext << "\tbne $t2, $zero, isFalse" << opNum << endl;
+		ftext << "\tli $t3, 1\n";
+		ftext << "\tj jTrue" << opNum << endl;
+		ftext << "isFalse" << opNum << ":\n";
+		ftext << "\tli $t3, 0\n";
+		ftext << "jTrue" << opNum++ << ":\n";
+	}
 	else{
-		ftext << "\t# op ==\n";
+		ftext << "\t# op " << op << endl;
 		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
 		else ftext << "\tlw $t1, " << pre << endl;
 		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
@@ -573,6 +586,10 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		else if(op=="<=") ftext << "\tble $t1, $t2, isTrue" << opNum << endl;
 		else if(op=="<") ftext << "\tbgt $t1, $t2, isTrue" << opNum << endl;
 		else if(op=="<=") ftext << "\tbge $t1, $t2, isTrue" << opNum << endl;
+		else if(op=="||"){
+			ftext << "\tbne $t1, $zero, isTrue" << opNum << endl;
+			ftext << "\tbne $t2, $zero, isTrue" << opNum << endl;
+		}
 		ftext << "\tli $t3, 0\n";
 		ftext << "\tj jFalse" << opNum << endl;
 		ftext << "isTrue" << opNum << ":\n";
