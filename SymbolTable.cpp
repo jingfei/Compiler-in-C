@@ -474,10 +474,12 @@ void SymbolTable::inorder2postorder(){
 }
 
 int SymbolTable::priority(string item){
-	if(item == "+" || item == "-")
-		return 1;
-	if(item == "*" || item == "/")
-		return 2;
+	if(item == "*" || item == "/") return 13;
+	if(item == "+" || item == "-") return 12;
+    if(item == "<" || item == "<=" || item == ">" || item == ">=") return 10;
+    if(item == "==" || item == "!=") return 9;
+    if(item == "&&") return 5;
+    if(item == "||") return 4;
 	return -1;
 }
 
