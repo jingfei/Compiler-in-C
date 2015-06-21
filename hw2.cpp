@@ -29,7 +29,7 @@ int main(){
 	freopen("tree.txt","w",stdout);
 	tree.printTree();
 
-	freopen("symbol_table.txt", "w", stdout);
+	//freopen("symbol_table.txt", "w", stdout);
 	freopen("tree.txt", "r", stdin);
 	SymbolTable symboltable;
 	symboltable.findSymbolTable();

@@ -53,13 +53,15 @@ class SymbolTable{
 		string ExprIdTail(string);
 		void ExprArrayTail(string);
 		void ExprListTail(int);
-        
         /* for expersion */
         void inorder2postorder();
         int priority(string);
         string caculateExp();
         string getResult(string, bool, string, bool, string);
         bool isNumber(string);
+        /* for type checking*/
+        void typeChecking(string, string);
+        bool isDouble(string);
 };
 
 #endif
