@@ -523,88 +523,92 @@ string SymbolTable::caculateExp(){
 }
 
 string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum, string op){
-	string reg = chooseRegister();
-    symtable[reg].isUsed = true;
     if(preIsNum){
+		string numReg=chooseRegister();
 		ftext << "\t# move num\n";
-		ftext << "\tli $t4, " << pre << endl;
-		pre="$t4";
+		ftext << "\tli " << numReg << ", " << pre << endl;
+		pre=numReg;
 	}
 	if(idIsNum){
+		string idReg=chooseRegister();
 		ftext << "\t# move num\n";
-		ftext << "\tli $t5, " << id << endl;
-		id="$t5";
+		ftext << "\tli " << idReg << ", " << id << endl;
+		id=idReg;
 	}
-
+	string opReg1 = chooseRegister();
+	string opReg2 = chooseRegister();
 	if(op=="+"){
 		ftext << "\t# Add\n";
-		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
-		else ftext << "\tlw $t1, " << pre << endl;
-		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
-		else ftext << "\tlw $t2, " << id << endl;
-		ftext << "\tadd " << reg << ", $t2, $t1\n";
+		if(pre[0]=='$') ftext << "\tmove " << opReg1 << ", " << pre << endl;
+		else ftext << "\tlw " << opReg1 << ", " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove " << opReg2 << ", " << id << endl;
+		else ftext << "\tlw " << opReg2 << ", " << id << endl;
+		ftext << "\tadd " << opReg1 << ", " << opReg2 << ", " << opReg1 << endl;
 	}
 	else if(op=="-"){
 		ftext << "\t# Sub\n";
-		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
-		else ftext << "\tlw $t1, " << pre << endl;
-		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
-		else ftext << "\tlw $t2, " << id << endl;
-		ftext << "\tsub " << reg << ", $t2, $t1\n"; 
+		if(pre[0]=='$') ftext << "\tmove " << opReg1 << ", " << pre << endl;
+		else ftext << "\tlw " << opReg1 << ", " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove " << opReg2 << ", " << id << endl;
+		else ftext << "\tlw " << opReg2 << ", " << id << endl;
+		ftext << "\tsub " << opReg1 << ", " << opReg2 << ", " << opReg1 << endl; 
 	}
 	else if(op=="*"){
 		ftext << "\t# Mult\n";
-		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
-		else ftext << "\tlw $t1, " << pre << endl;
-		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
-		else ftext << "\tlw $t2, " << id << endl;
-		ftext << "\tmul " << reg << ", $t2, $t1\n";
+		if(pre[0]=='$') ftext << "\tmove " << opReg1 << ", " << pre << endl;
+		else ftext << "\tlw " << opReg1 << ", " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove " << opReg2 << ", " << id << endl;
+		else ftext << "\tlw " << opReg2 << ", " << id << endl;
+		ftext << "\tmul " << opReg1 << ", " << opReg2 << ", " << opReg1 << endl;
 	}
 	else if(op=="/"){
 		ftext << "\t# Div\n";
-		if(pre[0]=='$') ftext << "\tmove $t1, " << pre << endl;
-		else ftext << "\tlw $t1, " << pre << endl;
-		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
-		else ftext << "\tlw $t2, " << id << endl;
-		ftext << "\tdiv " << reg << ", $t2, $t1\n";
+		if(pre[0]=='$') ftext << "\tmove " << opReg1 << ", " << pre << endl;
+		else ftext << "\tlw " << opReg1 << ", " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove " << opReg2 << ", " << id << endl;
+		else ftext << "\tlw " << opReg2 << ", " << id << endl;
+		ftext << "\tdiv " << opReg1 << ", " << opReg2 << ", " << opReg1 << endl;
 	}
 	else if(op=="&&"){
 		ftext << "\t# op &&\n";
-		if(pre[0]=='$') ftext << "\tmove $t2, " << pre << endl;
-		else ftext << "\tlw $t2, " << pre << endl;
-		if(id[0]=='$') ftext << "\tmove $t1, " << id << endl;
-		else ftext << "\tlw $t1, " << id << endl;
-		ftext << "\tbne $t1, $zero, isFalse" << opNum << endl;
-		ftext << "\tbne $t2, $zero, isFalse" << opNum << endl;
-		ftext << "\tli $t3, 1\n";
+		if(pre[0]=='$') ftext << "\tmove " << opReg2 << ", " << pre << endl;
+		else ftext << "\tlw " << opReg2 << ", " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove " << opReg1 << ", " << id << endl;
+		else ftext << "\tlw " << opReg1 << ", " << id << endl;
+		ftext << "\tbne " << opReg1 << ", $zero, isFalse" << opNum << endl;
+		ftext << "\tbne " << opReg2 << ", $zero, isFalse" << opNum << endl;
+		ftext << "\tli " << opReg1 << ", 1\n";
 		ftext << "\tj jTrue" << opNum << endl;
 		ftext << "isFalse" << opNum << ":\n";
-		ftext << "\tli $t3, 0\n";
+		ftext << "\tli " << opReg1 << ", 0\n";
 		ftext << "jTrue" << opNum++ << ":\n";
 	}
 	else{
 		ftext << "\t# op " << op << endl;
-		if(pre[0]=='$') ftext << "\tmove $t2, " << pre << endl;
-		else ftext << "\tlw $t2, " << pre << endl;
-		if(id[0]=='$') ftext << "\tmove $t1, " << id << endl;
-		else ftext << "\tlw $t1, " << id << endl;
-		if(op=="==") ftext << "\tbeq $t1, $t2, isTrue" << opNum << endl;
-		else if(op=="!=") ftext << "\tbne $t1, $t2, isTrue" << opNum << endl;
-		else if(op=="<") ftext << "\tblt $t1, $t2, isTrue" << opNum << endl;
-		else if(op=="<=") ftext << "\tble $t1, $t2, isTrue" << opNum << endl;
-		else if(op==">") ftext << "\tbgt $t1, $t2, isTrue" << opNum << endl;
-		else if(op==">=") ftext << "\tbge $t1, $t2, isTrue" << opNum << endl;
+		if(pre[0]=='$') ftext << "\tmove " << opReg2 << ", " << pre << endl;
+		else ftext << "\tlw " << opReg2 << ", " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove " << opReg1 << ", " << id << endl;
+		else ftext << "\tlw " << opReg1 << ", " << id << endl;
+		if(op=="==") ftext << "\tbeq " << opReg1 << ", " << opReg2 << ", isTrue" << opNum << endl;
+		else if(op=="!=") ftext << "\tbne " << opReg1 << ", " << opReg2 << ", isTrue" << opNum << endl;
+		else if(op=="<") ftext << "\tblt " << opReg1 << ", " << opReg2 << ", isTrue" << opNum << endl;
+		else if(op=="<=") ftext << "\tble " << opReg1 << ", " << opReg2 << ", isTrue" << opNum << endl;
+		else if(op==">") ftext << "\tbgt " << opReg1 << ", " << opReg2 << ", isTrue" << opNum << endl;
+		else if(op==">=") ftext << "\tbge " << opReg1 << ", " << opReg2 << ", isTrue" << opNum << endl;
 		else if(op=="||"){
-			ftext << "\tbne $t1, $zero, isTrue" << opNum << endl;
-			ftext << "\tbne $t2, $zero, isTrue" << opNum << endl;
+			ftext << "\tbne " << opReg1 << ", $zero, isTrue" << opNum << endl;
+			ftext << "\tbne " << opReg2 << ", $zero, isTrue" << opNum << endl;
 		}
-		ftext << "\tli $t3, 0\n";
+		ftext << "\tli " << opReg1 << ", 0\n";
 		ftext << "\tj jFalse" << opNum << endl;
 		ftext << "isTrue" << opNum << ":\n";
-		ftext << "\tli $t3, 1\n";
+		ftext << "\tli " << opReg1 << ", 1\n";
 		ftext << "jFalse" << opNum++ << ":\n";
 	}
-	return reg;
+	if(pre[0]=="$") symtable[pre].Used=false;
+	if(id[0]=="$") symtable[id].Used=false;
+	symtable[opReg2].Used=false;
+	return opReg1;
 }
 
 bool SymbolTable::isNumber(string item){
@@ -625,11 +629,13 @@ void SymbolTable::ExprArrayTail(string pre){
 		inorder2postorder();
 		while(!inorderExp.empty()) inorderExp.pop();
 		id = caculateExp();
+		string tmpReg = chooseRegister();
 		ftext << "\t# Equal\n";
-		if(id[0]=='$') ftext << "\tmove $t1, " << id << endl;
-		else ftext << "\tlw $t1, " << id << endl;
-		if(pre[0]=='$') ftext << "\tmove " << pre << ", $t1\n";
-		else ftext << "\tsw $t1, " << pre << endl;
+		if(id[0]=='$') ftext << "\tmove " << tmpReg << ", " << id << endl;
+		else ftext << "\tlw " << tmpReg << ", " << id << endl;
+		if(pre[0]=='$') ftext << "\tmove " << pre << ", " << tmpReg << endl;
+		else ftext << "\tsw " << tmpReg << ", " << pre << endl;
+		symtable[tmpReg].Used=false;
 	}
 }
 
@@ -684,8 +690,11 @@ bool SymbolTable::isDouble(string num){
 }
 
 string SymbolTable::chooseRegister(){
-    for(int i=7; i<=9; i++)
-        if(symtable["$t"+to_string(i)].isUsed == false)
+    for(int i=0; i<10; ++i)
+        if(!symtable["$t"+to_string(i)].isUsed){
+			symtable["$t"+to_string(i)].isUsed=true;
             return "$t"+to_string(i);
-    return "$t6"; // may cause problem
+		}
+    return "wemy!"; // may cause problem
 }
+
