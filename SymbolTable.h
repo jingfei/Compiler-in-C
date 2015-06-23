@@ -51,7 +51,7 @@ class SymbolTable{
 		/* for grammar */
 		string Stmt(string bkstmt="");
 		string Expr();
-		string Expr2(string,bool isNum=false);
+		void Expr2(string,bool isNum=false);
 		string ExprIdTail(string);
 		void ExprArrayTail(string);
 		void ExprListTail(int);
@@ -64,7 +64,9 @@ class SymbolTable{
         /* for type checking*/
         bool typeChecking(string, string, int);
         bool isDouble(string);
+		/* for temp */
         string chooseRegister();
+		void releaseRegister(string);
 };
 
 #endif
