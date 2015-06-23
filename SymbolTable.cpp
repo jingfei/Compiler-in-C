@@ -469,10 +469,8 @@ string SymbolTable::caculateExp(){
 			string pre = temp.top(); temp.pop();
 			string id = temp.top(); temp.pop();
             //typeIsDouble = typeChecking(pre, id, scope);
-			releaseRegister(id);
-			releaseRegister(pre);
-            string result = getResult(pre, isNumber(pre), id, isNumber(id), item);
-            temp.push(result);
+			string result = getResult(pre, isNumber(pre), id, isNumber(id), item);
+			temp.push(result);
 			postorderExp.pop();
             if(!postorderExp.empty()) item = postorderExp.front();
             ftp3 << item << " -- in while\n";
