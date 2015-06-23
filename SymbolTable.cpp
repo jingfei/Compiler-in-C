@@ -115,12 +115,14 @@ void SymbolTable::printSymbolTable(){
 	fstream fSymbol;
     fSymbol.open("symbol_table.txt", ios::out);
     for(auto i : vSymTable){
-		fSymbol << setw(5)  << left << i->scope;
-		fSymbol << setw(10) << left << i->symbol;
-		fSymbol << setw(8)  << left << i->type;
-		fSymbol << setw(8)  << left << (i->arr ? "true" : "false");
-	    fSymbol << setw(8)  << left << (i->func ? "true" : "false"); 
-		fSymbol << endl;
+        if(i->symbol[0]!='$'){
+		    fSymbol << setw(5)  << left << i->scope;
+		    fSymbol << setw(10) << left << i->symbol;
+		    fSymbol << setw(8)  << left << i->type;
+		    fSymbol << setw(8)  << left << (i->arr ? "true" : "false");
+	        fSymbol << setw(8)  << left << (i->func ? "true" : "false"); 
+		    fSymbol << endl;
+        }
 	}
     fSymbol.close();
 }
@@ -483,6 +485,7 @@ int SymbolTable::priority(string item){
 }
 
 string SymbolTable::caculateExp(){
+    bool typeIsDouble;
 	if(!postorderExp.empty()){
 		if(postorderExp.size()<3)
             if(isNumber(postorderExp.front())){
@@ -506,6 +509,7 @@ string SymbolTable::caculateExp(){
 			}
 			string pre = temp.top(); temp.pop();
 			string id = temp.top(); temp.pop();
+            //typeIsDouble = typeChecking(pre, id, scope);
 			string result = getResult(pre, isNumber(pre), id, isNumber(id), item);
 			temp.push(result);
 			postorderExp.pop();
@@ -517,7 +521,9 @@ string SymbolTable::caculateExp(){
 }
 
 string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum, string op){
-	if(preIsNum){
+	string reg = chooseRegister();
+    symtable[reg].isUsed = true;
+    if(preIsNum){
 		ftext << "\t# move num\n";
 		ftext << "\tli $t4, " << pre << endl;
 		pre="$t4";
@@ -534,7 +540,7 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		else ftext << "\tlw $t1, " << pre << endl;
 		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
 		else ftext << "\tlw $t2, " << id << endl;
-		ftext << "\tadd $t3, $t2, $t1\n";
+		ftext << "\tadd " << reg << ", $t2, $t1\n";
 	}
 	else if(op=="-"){
 		ftext << "\t# Sub\n";
@@ -542,7 +548,7 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		else ftext << "\tlw $t1, " << pre << endl;
 		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
 		else ftext << "\tlw $t2, " << id << endl;
-		ftext << "\tsub $t3, $t2, $t1\n"; 
+		ftext << "\tsub " << reg << ", $t2, $t1\n"; 
 	}
 	else if(op=="*"){
 		ftext << "\t# Mult\n";
@@ -550,7 +556,7 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		else ftext << "\tlw $t1, " << pre << endl;
 		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
 		else ftext << "\tlw $t2, " << id << endl;
-		ftext << "\tmul $t3, $t2, $t1\n";
+		ftext << "\tmul " << reg << ", $t2, $t1\n";
 	}
 	else if(op=="/"){
 		ftext << "\t# Div\n";
@@ -558,7 +564,7 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		else ftext << "\tlw $t1, " << pre << endl;
 		if(id[0]=='$') ftext << "\tmove $t2, " << id << endl;
 		else ftext << "\tlw $t2, " << id << endl;
-		ftext << "\tdiv $t3, $t2, $t1\n";
+		ftext << "\tdiv " << reg << ", $t2, $t1\n";
 	}
 	else if(op=="&&"){
 		ftext << "\t# op &&\n";
@@ -596,9 +602,7 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		ftext << "\tli $t3, 1\n";
 		ftext << "jFalse" << opNum++ << ":\n";
 	}
-//	else
-//		ftext << "op is " << op << endl; 
-	return "$t3";
+	return reg;
 }
 
 bool SymbolTable::isNumber(string item){
@@ -640,25 +644,34 @@ void SymbolTable::ExprListTail(int i){
 	}
 }
 
-void SymbolTable::typeChecking(string a, string b){
+bool SymbolTable::typeChecking(string a, string b, int scope){
     string typeA, typeB, idA = a, idB=b;
+    bool aIsNum=false, bIsNum=false;
     if(isNumber(a)){
         if(isDouble(a)) typeA = "double";
         else typeA = "int";
+        aIsNum = true;
     }
     else if(a[0] == '$'){
         idA = "temp";
+        typeA = symtable[a].turnType ? "double" : symtable[a].type;
     }
-    else typeA = symtable[a].type;
+    else typeA = symtable[a].turnType ? "double" : symtable[a].type;
     if(isNumber(b)){
         if(isDouble(b)) typeB = "double";
         else typeB = "int";
+        bIsNum = true;
     }
     else if(b[0] == '$'){
         idB = "temp";
+        typeB = symtable[b].turnType ? "double" : symtable[b].type;
     }
-    else typeB = symtable[b].type;
-    if(typeA!=typeB) cout << "warning(scope ) : " << idA << typeA << " , " << idB << typeB << endl;
+    else typeB= symtable[b].turnType ? "double" : symtable[b].type;
+    if(typeA!=typeB){
+        cout << "warning(scope" << scope << ") : " << idA << typeA << " , " << idB << typeB << endl;
+        if(!aIsNum) symtable[a].turnType = true;
+        if(!bIsNum) symtable[b].turnType = true;
+    }
 }
 
 bool SymbolTable::isDouble(string num){
@@ -666,4 +679,11 @@ bool SymbolTable::isDouble(string num){
         if(num[i] == '.')
             return true;
     return false;
+}
+
+string SymbolTable::chooseRegister(){
+    for(int i=7; i<=9; i++)
+        if(symtable["$t"+i].isUsed == false)
+            return "$t"+i;
+    return "$t6"; // may cause problem
 }

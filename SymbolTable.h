@@ -39,6 +39,8 @@ class SymbolTable{
 			vector<double> ar;
 			int func_scope;
 			string func_name;
+            bool turnType;
+            bool isUsed;
 		};
 		map <string,SymTable> symtable; 
 		vector<SymTable*> vSymTable;
@@ -60,8 +62,9 @@ class SymbolTable{
         string getResult(string, bool, string, bool, string);
         bool isNumber(string);
         /* for type checking*/
-        void typeChecking(string, string);
+        bool typeChecking(string, string, int);
         bool isDouble(string);
+        string chooseRegister();
 };
 
 #endif
