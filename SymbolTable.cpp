@@ -27,7 +27,6 @@ void SymbolTable::newScope(string index, bool moveStk, string bkstmt){
 		while(!stk.empty() && stk.top().first>=n) stk.pop();
 		stk.push(pair<int,string>(n,gram));
 		if(gram[0]=='{'){ 
-			//			ftext << "Symbol" << (moveStk ? "true" : "false") << endl;
 			newScope(new_index, moveStk);
 		}
 		else if(gram=="Type"){ // new var (for symbol table)
@@ -61,16 +60,7 @@ void SymbolTable::newScope(string index, bool moveStk, string bkstmt){
 				new_index = index;
 				paramNum=0;
 				ftext << symtable[index].symbol << ":\n";
-				if(symtable[index].symbol!="main"){
-					moveStk=true;
-//					ftext << "\tsub $sp, $sp, 16\n";
-//					ftext << "\tsw $t1, 4($sp)\n";
-//					ftext << "\tsw $t2, 8($sp)\n";
-//					ftext << "\tsw $t3, 12($sp)\n";
-//					ftext << "\tsw $t4, 16($sp)\n";
-				}
-				else moveStk=false;
-				//				ftext << "func" << (moveStk ? "true" : "false") << endl;
+				moveStk=true;
 			}
 			else{  // arr
 				cin >> n >> gram;
@@ -89,11 +79,6 @@ void SymbolTable::newScope(string index, bool moveStk, string bkstmt){
 		else if(gram[0]=='}'){
 			if(moveStk){
 				moveStk=false;
-//				ftext << "\tlw $t1, 4($sp)\n";
-//				ftext << "\tlw $t2, 8($sp)\n";
-//				ftext << "\tlw $t3, 12($sp)\n";
-//				ftext << "\tlw $t4, 16($sp)\n";
-//				ftext << "\tadd $sp, $sp, 16\n";
 				ftext << "\tjr $ra\n";
 			}
 			break;
@@ -242,7 +227,6 @@ string SymbolTable::Stmt(string bkstmt){
 		ftext << "\tlw $a0, " << id << endl;
 	//	ftext << "\tadd $a0, $t1, $zero\n";
 		ftext << "\tsyscall\n";
-		ftext << "\tjr $ra\n";
 	}
 	return "";
 }
@@ -335,8 +319,10 @@ string SymbolTable::ExprIdTail(string pre){
 		if(gram=="ExprListTail") ExprListTail(0);
 		cin >> n >> gram; // )
 		ftext << "\tmove $s" << funcNum++ <<", $ra\n";
+		symtable["$s"+to_string(funcNum-1)].isUsed=true;
 		ftext << "\tjal " << pre << endl;
 		ftext << "\tmove $ra, $s" << --funcNum << endl;
+		symtable["$s"+to_string(funcNum)].isUsed=false;
 		string funcReg = chooseRegister();
 		ftext << "\t# move function return to funcReg\n";
 		ftext << "\tmove " << funcReg << ", $v0\n";
@@ -672,13 +658,19 @@ string SymbolTable::chooseRegister(){
 			symtable["$t"+to_string(i)].isUsed=true;
             return "$t"+to_string(i);
 		}
+    for(int i=7; i>=0; --i)
+        if(!symtable["$s"+to_string(i)].isUsed){
+			symtable["$s"+to_string(i)].isUsed=true;
+            return "$s"+to_string(i);
+		}
     return "WemyReg!"; // may cause problem
 }
 
 void SymbolTable::releaseRegister(string t){
-	string tmp="$t";
+	string tmp="$";
 	for(int i=0; i<t.length(); ++i)
-		if(t[i]=='$' && t[i+1]=='t'){
+		if(t[i]=='$' && (t[i+1]=='t' || t[i+1]=='s') ){
+			tmp+=t[i+1];
 			tmp+=t[i+2];
 			break;
 		}
