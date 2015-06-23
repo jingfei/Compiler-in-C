@@ -510,6 +510,8 @@ string SymbolTable::caculateExp(){
 			string pre = temp.top(); temp.pop();
 			string id = temp.top(); temp.pop();
             //typeIsDouble = typeChecking(pre, id, scope);
+            if(id[0] == '$') symtable[id].isUsed = false;
+            if(pre[0] == '$') symtable[pre].isUsed = false;
 			string result = getResult(pre, isNumber(pre), id, isNumber(id), item);
 			temp.push(result);
 			postorderExp.pop();
@@ -683,7 +685,7 @@ bool SymbolTable::isDouble(string num){
 
 string SymbolTable::chooseRegister(){
     for(int i=7; i<=9; i++)
-        if(symtable["$t"+i].isUsed == false)
-            return "$t"+i;
+        if(symtable["$t"+to_string(i)].isUsed == false)
+            return "$t"+to_string(i);
     return "$t6"; // may cause problem
 }
