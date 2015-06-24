@@ -45,7 +45,7 @@ class SymbolTable{
             string represent;
 			string tmpReplace;
 			/* constructor */
-			SymTable(): tmpReplace(""){}
+			SymTable(): tmpReplace(""),turnType(false),isUsed(false),arr(false),func(false){}
 		};
 		map <string,SymTable> symtable; 
 		vector<SymTable*> vSymTable;

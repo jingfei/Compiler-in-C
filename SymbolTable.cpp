@@ -571,7 +571,6 @@ string SymbolTable::caculateExp(int scope){
             ftp3 << item << " -- in while\n";
 		}
         symtable[temp.top()].represent = temp.top();
-        cout << temp.top();
 		return temp.top();
 	}
 }
