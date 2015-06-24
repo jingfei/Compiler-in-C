@@ -196,15 +196,16 @@ string SymbolTable::Stmt(string bkstmt){
 		string tmpReg = chooseRegister();
 		if(id[0]=='$') ftext << "\tmove " << tmpReg << ", " << id << endl;
 		else ftext << "\tlw " << tmpReg << ", " << id << endl;
-		ftext << "\tbeq " << tmpReg << ", $zero, Else" << to_string(maxScope+1) << endl;
+		string ifNum = to_string(maxScope+1);
+		ftext << "\tbeq " << tmpReg << ", $zero, Else" << ifNum << endl;
 		releaseRegister(tmpReg);
 		releaseRegister(id);
 		cin >> n >> gram; Stmt(bkstmt);
-		ftext << "\tj EndIf" << to_string(scope.top().first+1) << endl;
+		ftext << "\tj EndIf" << ifNum << endl;
 		cin >> n >> gram; // else
-		ftext << "Else" << to_string(scope.top().first+1) << ":\n";
+		ftext << "Else" << ifNum << ":\n";
 		cin >> n >> gram; Stmt(bkstmt);
-		ftext << "EndIf" << to_string(scope.top().first+1) << ":\n";
+		ftext << "EndIf" << ifNum << ":\n";
 	}
 	else if(gram=="while"){
 		cin >> n >> gram; // (
@@ -212,7 +213,8 @@ string SymbolTable::Stmt(string bkstmt){
 		cin >> n >> gram; // )
 		ftext << "\t# while loop\n";
 		string tmpReg = chooseRegister();
-		ftext << "While"+to_string(maxScope+1) << ":\n";
+		string whileNum = to_string(maxScope+1);
+		ftext << "While"+whileNum << ":\n";
         while(!postorderExp.empty()) postorderExp.pop();
         inorder2postorder();
         while(!inorderExp.empty()) inorderExp.pop();
@@ -220,12 +222,12 @@ string SymbolTable::Stmt(string bkstmt){
 		ftext << "\t# compare zero\n";
 		if(id[0]=='$') ftext << "\tmove " << tmpReg << ", " << id << endl;
 		else ftext << "\tlw " << tmpReg << ", " << id << endl;
-		ftext << "\tbeq " << tmpReg << ", $zero, EndWhile" << to_string(maxScope+1) << endl;
+		ftext << "\tbeq " << tmpReg << ", $zero, EndWhile" << whileNum << endl;
 		releaseRegister(tmpReg);
 		releaseRegister(id);
-		cin >> n >> gram; Stmt("EndWhile"+to_string(maxScope+1));
-		ftext << "\tj While"+to_string(scope.top().first+1) << endl;
-		ftext << "EndWhile" << to_string(scope.top().first+1) << ":\n";
+		cin >> n >> gram; Stmt("EndWhile"+whileNum);
+		ftext << "\tj While"+whileNum << endl;
+		ftext << "EndWhile" << whileNum << ":\n";
 	}
 	else if(gram=="Block"){
 		cin >> n >> gram; // {
