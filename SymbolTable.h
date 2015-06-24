@@ -43,6 +43,9 @@ class SymbolTable{
             bool turnType;
             bool isUsed;
             string represent;
+			string tmpReplace;
+			/* constructor */
+			SymTable(): tmpReplace(""){}
 		};
 		map <string,SymTable> symtable; 
 		vector<SymTable*> vSymTable;
@@ -65,7 +68,7 @@ class SymbolTable{
         string getResult(string, bool, string, bool, string);
         bool isNumber(string);
         /* for type checking*/
-        bool typeChecking(string, string, int);
+        bool typeChecking(string &, string &, int);
         bool isDouble(string);
 		/* for temp */
         string chooseRegister(bool isdouble);
