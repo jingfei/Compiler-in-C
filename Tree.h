@@ -8,9 +8,9 @@ class Tree : public Lexer, public LLTable{
 	public:
 //		Tree(map <string, map<string, vector<string> > > LLtable,
 //				vector< pair<string,string> > Parse);
-		void printTree();
+		void printTree(fstream&);
 	private:
-		int Trace(string,vector< pair<string,string> >,int,int);
+		int Trace(string,vector< pair<string,string> >,int,int,fstream&);
 };
 
 #endif

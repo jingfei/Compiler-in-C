@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cstdio>
 #include <vector>
 #include <map>
@@ -46,15 +47,15 @@ void LLTable::findLLtable(){
 	}
 }
 
-void LLTable::printLLtable(){
-	cout << "S\n";
+void LLTable::printLLtable(fstream& fLLtable){
+	fLLtable << "S\n";
 	for(auto n : Seq)
 		for(auto j : LLtable[n]){
-			cout << setw(20) << left << n
-				 << setw(20) << left << j.first;
+			fLLtable << setw(20) << left << n
+				 	 << setw(20) << left << j.first;
 			for(auto k : j.second)
-				cout << k << " ";
-			cout << endl;
+				fLLtable << k << " ";
+			fLLtable << endl;
 		}
 }
 

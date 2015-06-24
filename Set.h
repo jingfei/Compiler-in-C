@@ -9,9 +9,9 @@ class Set: public Compiler{
 //			map <string,eachTok> Toks, 
 //			vector <string> Seq);
 		void findFirst();
-		void printFirst();
+		void printFirst(fstream&);
 		void findFollow();
-		void printFollow();
+		void printFollow(fstream&);
 		map <string,eachTok> getToks();
 	private:
 		void getFirst(struct eachTok &);

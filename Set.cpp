@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cstdio>
 #include <vector>
 #include <cstring>
@@ -75,16 +76,16 @@ void Set::findFirst(){
 	}
 }
 
-void Set::printFirst(){
-	printf("First\n");
+void Set::printFirst(fstream& fset){
+	fset << "First\n";
 	for(auto n : Seq){
 		struct eachTok i = Toks[n];
 		if(i.isTerm) continue; 
 		/* print terminals */
-		cout << setw(20) << left << i.name << ":";
+		fset << setw(20) << left << i.name << ":";
 		for(auto j : i.First)
-			cout << " " << j;
-		printf("\n");
+			fset << " " << j;
+		fset << endl;
 	}
 }
 
@@ -123,16 +124,16 @@ void Set::findFollow(){
 		}
 }
 
-void Set::printFollow(){
-	printf("Follow\n");
+void Set::printFollow(fstream& fset){
+	fset << "Follow\n";
 	for(auto n : Seq){
 		struct eachTok i = Toks[n];
 		if(i.isTerm) continue; 
 		/* print terminals */
-		cout << setw(20) << left << i.name << ":";
+		fset << setw(20) << left << i.name << ":";
 		for(auto j : i.Follow)
-			cout << " " << j;
-		printf("\n");
+			fset << " " << j;
+		fset << endl;
 	}
 }
 

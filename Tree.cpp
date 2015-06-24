@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cstdio>
 #include <vector>
 #include <map>
@@ -14,28 +15,28 @@ using namespace std;
 //	this->Parse = Parse;
 //}
 
-int Tree::Trace(string last, vector< pair<string,string> > now, int k, int stk){
-	for(int i=0; i<stk; ++i) printf("  ");
-	cout << stk+1 << " " << last << endl;
+int Tree::Trace(string last, vector< pair<string,string> > now, int k, int stk, fstream& ftree){
+	for(int i=0; i<stk; ++i) ftree << "  ";
+	ftree << stk+1 << " " << last << endl;
 	if(last=="epsilon") return k;
 	if(k==(int)now.size()) return k;
 	for(auto i : LLtable[last][now[k].first]){
 		if(i==now[k].first){
-			for(int i=0; i<=stk; ++i) printf("  ");
-			cout << stk+2 << " " << i << endl;
+			for(int i=0; i<=stk; ++i) ftree << "  ";
+			ftree << stk+2 << " " << i << endl;
 			if(now[k].second!=""){
-				for(int i=0; i<=stk+1; ++i) printf("  ");
-				cout << stk+3 << " " << now[k].second << endl;
+				for(int i=0; i<=stk+1; ++i) ftree << "  ";
+				ftree << stk+3 << " " << now[k].second << endl;
 			}
 			++k;
 		}
 		else
-			k=Trace(i,now,k,stk+1);
+			k=Trace(i,now,k,stk+1,ftree);
 	}
 	return k;
 }
 
-void Tree::printTree(){
-	Trace(Parse[0].first,Parse,1,0);
+void Tree::printTree(fstream& ftree){
+	Trace(Parse[0].first,Parse,1,0,ftree);
 }
 
