@@ -12,7 +12,7 @@ class SymbolTable{
 		SymbolTable(){
 			maxScope=-1; 
 			ftext.open("main.asm", ios::out);
-			if(!ftext){cerr << "Can't open .text!\n"; exit(1);}
+			if(!ftext){cerr << "Can't open main.asm!\n"; exit(1);}
             presentFun.push("main");
 		}
 		void findSymbolTable();
@@ -68,7 +68,7 @@ class SymbolTable{
         bool typeChecking(string, string, int);
         bool isDouble(string);
 		/* for temp */
-        string chooseRegister();
+        string chooseRegister(bool isdouble);
 		void releaseRegister(string);
 };
 

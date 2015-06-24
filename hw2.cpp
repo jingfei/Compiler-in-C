@@ -37,6 +37,7 @@ int main(){
 	ftree.open("tree.txt", ios::out);
 	if(!ftree){cerr << "Can't open tree.txt!\n"; exit(1);}
 	tree.printTree(ftree);
+	ftree.close();
 
 	//freopen("symbol_table.txt", "w", stdout);
 	freopen("tree.txt", "r", stdin);
