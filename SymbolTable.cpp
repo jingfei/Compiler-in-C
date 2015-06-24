@@ -640,8 +640,10 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 			else ftext << "\tl.d " << opReg2 << ", " << pre << endl;
 			if(id[0]=='$') ftext << "\tmov.d " << opReg1 << ", " << id << endl;
 			else ftext << "\tl.d " << opReg1 << ", " << id << endl;
-			ftext << "\tc.ne.d " << opReg1 << ", $zero, isFalse" << opNum << endl;
-			ftext << "\tc.ne.d " << opReg2 << ", $zero, isFalse" << opNum << endl;
+			ftext << "\tc.eq.d " << opReg1 << ", $zero\n";
+			ftext << "\tbc1t isFalse" << opNum << endl;
+			ftext << "\tc.eq.d " << opReg2 << ", $zero\n";
+			ftext << "\tbc1t isFalse" << opNum << endl;
 			releaseRegister(opReg1);
 			opReg1 = chooseRegister(false);
 			ftext << "\tli " << opReg1 << ", 1\n";
@@ -656,15 +658,23 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 			else ftext << "\tl.d " << opReg2 << ", " << pre << endl;
 			if(id[0]=='$') ftext << "\tmov.d " << opReg1 << ", " << id << endl;
 			else ftext << "\tl.d " << opReg1 << ", " << id << endl;
-			if(op=="==") ftext << "\tc.eq.d " << opReg1 << ", " << opReg2 << ", isTrue" << opNum << endl;
-			else if(op=="!=") ftext << "\tc.ne.d " << opReg1 << ", " << opReg2 << ", isTrue" << opNum << endl;
-			else if(op=="<") ftext << "\tc.lt.d " << opReg1 << ", " << opReg2 << ", isTrue" << opNum << endl;
-			else if(op=="<=") ftext << "\tc.le.d " << opReg1 << ", " << opReg2 << ", isTrue" << opNum << endl;
-			else if(op==">") ftext << "\tc.gt.d " << opReg1 << ", " << opReg2 << ", isTrue" << opNum << endl;
-			else if(op==">=") ftext << "\tc.ge.d " << opReg1 << ", " << opReg2 << ", isTrue" << opNum << endl;
-			else if(op=="||"){
-				ftext << "\tc.ne.d " << opReg1 << ", $zero, isTrue" << opNum << endl;
-				ftext << "\tc.ne.d " << opReg2 << ", $zero, isTrue" << opNum << endl;
+			if(op=="||"){
+				ftext << "\tc.eq.d " << opReg1 << ", $zero\n";
+				ftext << "\tbc1f isTrue" << opNum << endl;
+				ftext << "\tc.eq.d " << opReg2 << ", $zero\n";
+				ftext << "\tbc1f isTrue" << opNum << endl;
+			}
+			else if(op=="!="){
+				ftext << "\tc.eq.d " << opReg1 << ", " << opReg2 << endl;
+				ftext << "\tbc1f isTrue" << opNum << endl;
+			}
+			else{
+				if(op=="==") ftext << "\tc.eq.d " << opReg1 << ", " << opReg2 << endl;
+				else if(op=="<") ftext << "\tc.lt.d " << opReg1 << ", " << opReg2 << endl;
+				else if(op=="<=") ftext << "\tc.le.d " << opReg1 << ", " << opReg2 << endl;
+				else if(op==">") ftext << "\tc.lt.d " << opReg2 << ", " << opReg1 << endl;
+				else if(op==">=") ftext << "\tc.le.d " << opReg2 << ", " << opReg1 << endl;
+				ftext << "\tbc1t isTrue" << opNum << endl;
 			}
 			releaseRegister(opReg1);
 			opReg1 = chooseRegister(false);
@@ -716,8 +726,8 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 			else ftext << "\tlw " << opReg2 << ", " << pre << endl;
 			if(id[0]=='$') ftext << "\tmove " << opReg1 << ", " << id << endl;
 			else ftext << "\tlw " << opReg1 << ", " << id << endl;
-			ftext << "\tbne " << opReg1 << ", $zero, isFalse" << opNum << endl;
-			ftext << "\tbne " << opReg2 << ", $zero, isFalse" << opNum << endl;
+			ftext << "\tbeq " << opReg1 << ", $zero, isFalse" << opNum << endl;
+			ftext << "\tbeq " << opReg2 << ", $zero, isFalse" << opNum << endl;
 			ftext << "\tli " << opReg1 << ", 1\n";
 			ftext << "\tj jTrue" << opNum << endl;
 			ftext << "isFalse" << opNum << ":\n";
