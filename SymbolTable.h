@@ -42,6 +42,7 @@ class SymbolTable{
 			string func_name;
             bool turnType;
             bool isUsed;
+            string represent;
 		};
 		map <string,SymTable> symtable; 
 		vector<SymTable*> vSymTable;

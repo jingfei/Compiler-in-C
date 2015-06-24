@@ -363,7 +363,7 @@ string SymbolTable::ExprIdTail(string pre){
 		string arLocReg = chooseRegister();
 		ftext << "\tla " << arrReg << ", " << pre << endl;
         symtable[arrReg].type = symtable[pre].type;
-        symtable[arrReg].func_name = pre;
+        symtable[arrReg].represent = pre;
 		//id: num -> arLocReg
 		if(id[0]=='$') ftext << "\tmove " << arLocReg << ", " << id << endl;
 		else ftext << "\tlw " << arLocReg << ", " << id << endl;
@@ -401,8 +401,7 @@ string SymbolTable::ExprIdTail(string pre){
 		  }
 		  ft << endl;*/
 		id = postorderExp.empty() ? id : caculateExp(symtable[pre].scope);
-        typeChecking(pre, symtable[id].func_name, symtable[pre].scope);
-        symtable[id].func_name="";
+        typeChecking(pre, symtable[id].represent, symtable[pre].scope);
 		ftext << "\t# Equal\n";
 		string tmpReg = chooseRegister();
 		if(id[0]=='$') ftext << "\tmove " << tmpReg << ", " << id << endl;
@@ -471,7 +470,7 @@ string SymbolTable::caculateExp(int scope){
 		        ftext << "\t# move num\n";
 		        ftext << "\tli " << numReg << ", " << postorderExp.front() << endl;
                 symtable[numReg].type = isDouble(postorderExp.front())?"double":"int";
-                symtable[numReg].func_name = postorderExp.front();
+                symtable[numReg].represent = postorderExp.front();
                 return numReg;
             }
             else
@@ -498,7 +497,7 @@ string SymbolTable::caculateExp(int scope){
             if(!postorderExp.empty()) item = postorderExp.front();
             ftp3 << item << " -- in while\n";
 		}
-        symtable[temp.top()].func_name = temp.top();
+        symtable[temp.top()].represent = temp.top();
 		return temp.top();
 	}
 }
@@ -627,9 +626,7 @@ void SymbolTable::ExprArrayTail(string pre){
 		while(!inorderExp.empty()) inorderExp.pop();
 		string tempPre = pre.substr(2,3);
         id = caculateExp(symtable[tempPre].scope);
-        typeChecking(symtable[tempPre].func_name, symtable[id].func_name, symtable[symtable[tempPre].func_name].scope);
-		symtable[tempPre].func_name="";
-        symtable[id].func_name="";
+        typeChecking(symtable[tempPre].represent, symtable[id].represent, symtable[symtable[tempPre].represent].scope);
         ftext << "\t# Equal\n";
 		string tmpReg = chooseRegister();
 		if(id[0]=='$') ftext << "\tmove " << tmpReg << ", " << id << endl;
