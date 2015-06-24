@@ -187,16 +187,18 @@ string SymbolTable::Stmt(string bkstmt){
 		cin >> n >> gram; // (
 		cin >> n >> gram; string id = Expr();
 		cin >> n >> gram; // )
-		ftext << "\t# if stmt\n\t# compare zero\n";
+		ftext << "\t# if stmt\n";
         while(!postorderExp.empty()) postorderExp.pop();
         inorder2postorder();
         while(!inorderExp.empty()) inorderExp.pop();
         id = postorderExp.empty()?id:caculateExp();
-		ftext << "\t# if stmt\n\t# compare zero\n";
+		ftext << "\t# compare zero\n";
 		string tmpReg = chooseRegister();
-		ftext << "\tlw " << tmpReg << ", " << id << endl;
+		if(id[0]=='$') ftext << "\tmove " << tmpReg << ", " << id << endl;
+		else ftext << "\tlw " << tmpReg << ", " << id << endl;
 		ftext << "\tbeq " << tmpReg << ", $zero, Else" << to_string(maxScope+1) << endl;
-		symtable[tmpReg].isUsed=false;
+		releaseRegister(tmpReg);
+		releaseRegister(id);
 		cin >> n >> gram; Stmt(bkstmt);
 		ftext << "\tj EndIf" << to_string(scope.top().first+1) << endl;
 		cin >> n >> gram; // else
@@ -208,16 +210,19 @@ string SymbolTable::Stmt(string bkstmt){
 		cin >> n >> gram; // (
 		cin >> n >> gram; string id = Expr();
 		cin >> n >> gram; // )
-		ftext << "\t# while loop\n\t# compare zero\n";
+		ftext << "\t# while loop\n";
 		string tmpReg = chooseRegister();
 		ftext << "While"+to_string(maxScope+1) << ":\n";
         while(!postorderExp.empty()) postorderExp.pop();
         inorder2postorder();
         while(!inorderExp.empty()) inorderExp.pop();
         id = postorderExp.empty()?id:caculateExp();
-		ftext << "\tlw " << tmpReg << ", " << id << endl;
+		ftext << "\t# compare zero\n";
+		if(id[0]=='$') ftext << "\tmove " << tmpReg << ", " << id << endl;
+		else ftext << "\tlw " << tmpReg << ", " << id << endl;
 		ftext << "\tbeq " << tmpReg << ", $zero, EndWhile" << to_string(maxScope+1) << endl;
-		symtable[tmpReg].isUsed=false;
+		releaseRegister(tmpReg);
+		releaseRegister(id);
 		cin >> n >> gram; Stmt("EndWhile"+to_string(maxScope+1));
 		ftext << "\tj While"+to_string(scope.top().first+1) << endl;
 		ftext << "EndWhile" << to_string(scope.top().first+1) << ":\n";
