@@ -399,6 +399,7 @@ string SymbolTable::ExprIdTail(string pre){
 		  }
 		  ft << endl;*/
 		id = postorderExp.empty() ? id : caculateExp(symtable[pre].scope);
+        typeChecking(pre, id, symtable[pre].scope);
 		ftext << "\t# Equal\n";
 		string tmpReg = chooseRegister();
 		if(id[0]=='$') ftext << "\tmove " << tmpReg << ", " << id << endl;
@@ -466,6 +467,7 @@ string SymbolTable::caculateExp(int scope){
 				string numReg = chooseRegister();
 		        ftext << "\t# move num\n";
 		        ftext << "\tli " << numReg << ", " << postorderExp.front() << endl;
+                symtable[numReg].type = isDouble(postorderExp.front())?"double":"int";
                 return numReg;
             }
             else
@@ -487,6 +489,7 @@ string SymbolTable::caculateExp(int scope){
             typeIsDouble = typeChecking(pre, id, scope);
 			string result = getResult(pre, isNumber(pre), id, isNumber(id), item);
 			temp.push(result);
+            symtable[result].type = typeIsDouble ? "double" : "int";
 			postorderExp.pop();
             if(!postorderExp.empty()) item = postorderExp.front();
             ftp3 << item << " -- in while\n";
@@ -604,6 +607,7 @@ void SymbolTable::ExprArrayTail(string pre){
 		inorder2postorder();
 		while(!inorderExp.empty()) inorderExp.pop();
 		id = caculateExp(symtable[pre].scope);
+        typeChecking(pre, id, symtable[pre].scope);
 		ftext << "\t# Equal\n";
 		string tmpReg = chooseRegister();
 		if(id[0]=='$') ftext << "\tmove " << tmpReg << ", " << id << endl;
@@ -654,10 +658,12 @@ bool SymbolTable::typeChecking(string a, string b, int scope){
     }
     else typeB= symtable[b].turnType ? "double" : symtable[b].type;
     if(typeA!=typeB){
-        cout << "warning(scope" << scope << ") : " << idA << typeA << " , " << idB << typeB << endl;
+        cout << "warning(scope" << scope << ") : " << idA << " " <<  typeA << " , " << idB << " " << typeB << endl;
         if(!aIsNum) symtable[a].turnType = true;
         if(!bIsNum) symtable[b].turnType = true;
+        return true;
     }
+    return false;
 }
 
 bool SymbolTable::isDouble(string num){
