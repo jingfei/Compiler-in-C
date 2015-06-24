@@ -188,6 +188,11 @@ string SymbolTable::Stmt(string bkstmt){
 		cin >> n >> gram; string id = Expr();
 		cin >> n >> gram; // )
 		ftext << "\t# if stmt\n\t# compare zero\n";
+        while(!postorderExp.empty()) postorderExp.pop();
+        inorder2postorder();
+        while(!inorderExp.empty()) inorderExp.pop();
+        id = postorderExp.empty()?id:caculateExp();
+		ftext << "\t# if stmt\n\t# compare zero\n";
 		string tmpReg = chooseRegister();
 		ftext << "\tlw " << tmpReg << ", " << id << endl;
 		ftext << "\tbeq " << tmpReg << ", $zero, Else" << to_string(maxScope+1) << endl;
@@ -206,6 +211,10 @@ string SymbolTable::Stmt(string bkstmt){
 		ftext << "\t# while loop\n\t# compare zero\n";
 		string tmpReg = chooseRegister();
 		ftext << "While"+to_string(maxScope+1) << ":\n";
+        while(!postorderExp.empty()) postorderExp.pop();
+        inorder2postorder();
+        while(!inorderExp.empty()) inorderExp.pop();
+        id = postorderExp.empty()?id:caculateExp();
 		ftext << "\tlw " << tmpReg << ", " << id << endl;
 		ftext << "\tbeq " << tmpReg << ", $zero, EndWhile" << to_string(maxScope+1) << endl;
 		symtable[tmpReg].isUsed=false;
