@@ -311,7 +311,6 @@ string SymbolTable::ExprIdTail(string pre){
 	int n; string gram; cin >> n >> gram;
 	if(gram=="Expr'"){
 		Expr2(pre);
-		return "WemyGod!";
 	}
 	else if(gram=="("){
 		cin >> n >> gram; // ExprList
@@ -330,7 +329,6 @@ string SymbolTable::ExprIdTail(string pre){
 		Expr2(funcReg);
         while(!inorderExp.empty()) inorderExp.pop();
         inorderExp.push(funcReg);
-		return "WemyGod!";
 	}
 	else if(gram=="["){
 		cin >> n >> gram; string id = Expr();
@@ -390,10 +388,10 @@ string SymbolTable::ExprIdTail(string pre){
 		if(pre[0]=='$') ftext << "\tmove " << pre << ", " << tmpReg << endl;
 		else ftext << "\tsw " << tmpReg << ", " << pre << endl;
 		releaseRegister(id);
-		releaseRegister(pre);
+	//	releaseRegister(pre);
 		symtable[tmpReg].isUsed=false;
 	}
-	return "epsilon";
+	return pre;
 }
 
 void SymbolTable::inorder2postorder(){
@@ -605,6 +603,7 @@ void SymbolTable::ExprListTail(int i){
 	string id=Expr();
 	ftext << "\t# move parameter to $ai\n";
 	ftext << "\tlw $a" << i << ", " << id << endl;
+	releaseRegister(id);
 	cin >> n >> gram; //ExprListTail'
 	cin >> n >> gram;
 	if(gram==","){
