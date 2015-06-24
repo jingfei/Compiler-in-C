@@ -470,6 +470,7 @@ string SymbolTable::caculateExp(int scope){
 		        ftext << "\t# move num\n";
 		        ftext << "\tli " << numReg << ", " << postorderExp.front() << endl;
                 symtable[numReg].type = isDouble(postorderExp.front())?"double":"int";
+                symtable[numReg].turnType = isDouble(postorderExp.front())?true:false;
                 symtable[numReg].represent = postorderExp.front();
                 return numReg;
             }
@@ -509,6 +510,7 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		ftext << "\tli " << numReg << ", " << pre << endl;
 		pre=numReg;
         symtable[pre].type = isDouble(pre) ? "double" : "int";
+        symtable[pre].turnType = isDouble(pre) ? true : false;
 	}
 	if(idIsNum){
 		string idReg=chooseRegister();
@@ -516,6 +518,7 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		ftext << "\tli " << idReg << ", " << id << endl;
 		id=idReg;
         symtable[id].type = isDouble(id) ? "double" : "int";
+        symtable[id].turnType = isDouble(id) ? true : false;
 	}
 	string opReg1 = chooseRegister();
 	string opReg2 = chooseRegister();
