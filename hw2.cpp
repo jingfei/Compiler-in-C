@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "Compiler.h"
 #include "Tree.h"
 #include "Set.h"
@@ -16,25 +17,33 @@ int main(){
 	tree.input();
 	tree.findFirst();
 	tree.findFollow();
-	freopen("set.txt","w",stdout);
-	tree.printFirst();
-	printf("\n\n");
-	tree.printFollow();
+	fstream fset;
+	fset.open("set.txt", ios::out);
+	if(!fset){cerr << "Can't open set.txt!\n"; exit(1);}
+	tree.printFirst(fset);
+	fset << "\n\n";
+	tree.printFollow(fset);
+	fset.close();
 
 	freopen("grammar.txt", "r", stdin);
     tree.findLLtable();
-	freopen("LLtable.txt","w",stdout);
-	tree.printLLtable();
+	fstream fLLtable;
+	fLLtable.open("LLtable.txt", ios::out);
+	if(!fLLtable){cerr << "Can't open LLtable.txt!\n"; exit(1);}
+	tree.printLLtable(fLLtable);
+	fLLtable.close();
 
-	freopen("tree.txt","w",stdout);
-	tree.printTree();
+	fstream ftree;
+	ftree.open("tree.txt", ios::out);
+	if(!ftree){cerr << "Can't open tree.txt!\n"; exit(1);}
+	tree.printTree(ftree);
 
 	//freopen("symbol_table.txt", "w", stdout);
 	freopen("tree.txt", "r", stdin);
 	SymbolTable symboltable;
 	symboltable.findSymbolTable();
 	symboltable.printSymbolTable();
-    freopen("screen.txt", "w", stdout);
+//    freopen("screen.txt", "w", stdout);
  	symboltable.genDotDataFile();
 	return 0;
 }

@@ -9,7 +9,7 @@ class LLTable: public Set{
 //					map <string,eachTok> Toks,
 //					vector <string> Seq);
 		void findLLtable();
-		void printLLtable();
+		void printLLtable(fstream&);
 		map <string, map<string, vector<string> > > getLLtable();
 	private:
 		void insertLLtable(string row,string col,string head);
