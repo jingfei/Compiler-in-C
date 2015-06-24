@@ -452,9 +452,9 @@ string SymbolTable::ExprIdTail(string pre){
 		  }
 		  ft1<< endl;*/
 		inorder2postorder();
-		while(!inorderExp.empty())
+		/*while(!inorderExp.empty())
 			inorderExp.pop();
-		/*fstream ft;
+		fstream ft;
 		  ft.open("exp2.txt", ios::out);
 		  while(!postorderExp.empty()){
 		  ft << postorderExp.front() << " ";
@@ -563,14 +563,15 @@ string SymbolTable::caculateExp(int scope){
 			string pre = temp.top(); temp.pop();
 			string id = temp.top(); temp.pop();
             typeIsDouble = typeChecking(pre, id, scope);
-			string result = getResult(pre, isNumber(pre), id, isNumber(id), item);
-			temp.push(result);
+            string result = getResult(pre, isNumber(pre), id, isNumber(id), item);
+            temp.push(result);
             symtable[result].type = typeIsDouble ? "double" : "int";
 			postorderExp.pop();
             if(!postorderExp.empty()) item = postorderExp.front();
             ftp3 << item << " -- in while\n";
 		}
         symtable[temp.top()].represent = temp.top();
+        cout << temp.top();
 		return temp.top();
 	}
 }
@@ -600,8 +601,10 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 	}
 	string opReg1, opReg2;
 	if(isDouble(pre)){
-		string opReg1 = chooseRegister(true);
-		string opReg2 = chooseRegister(true);
+	    opReg1 = chooseRegister(true);
+		opReg2 = chooseRegister(true);
+        symtable[opReg1].type = "double";
+        symtable[opReg1].turnType = true;
 		if(op=="+"){
 			ftext << "\t# Add\n";
 			if(pre[0]=='$') ftext << "\tmov.d " << opReg1 << ", " << pre << endl;
@@ -865,6 +868,7 @@ bool SymbolTable::typeChecking(string a, string b, int scope){
         if(!bIsNum) symtable[b].turnType = true;
         return true;
     }
+    if(typeA=="double" || typeB=="double") return true;
     return false;
 }
 
