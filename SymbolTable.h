@@ -43,9 +43,9 @@ class SymbolTable{
             bool turnType;
             bool isUsed;
             string represent;
-			string tmpReplace;
+//			string tmpReplace;
 			/* constructor */
-			SymTable(): tmpReplace(""),turnType(false),isUsed(false),arr(false),func(false){}
+			SymTable(): /*tmpReplace(""),*/turnType(false),isUsed(false),arr(false),func(false){}
 		};
 		map <string,SymTable> symtable; 
 		vector<SymTable*> vSymTable;
@@ -68,7 +68,7 @@ class SymbolTable{
         string getResult(string, bool, string, bool, string);
         bool isNumber(string);
         /* for type checking*/
-        bool typeChecking(string &, string &, int);
+        bool typeChecking(string, string &, int);
         bool isDouble(string);
 		/* for temp */
         string chooseRegister(bool isdouble);
