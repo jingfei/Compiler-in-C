@@ -174,7 +174,7 @@ string SymbolTable::Stmt(string bkstmt){
 		  }
 		  ft << endl;*/
         while(!inorderExp.empty()) inorderExp.pop();
-        id = postorderExp.empty()?id:caculateExp();
+        id = postorderExp.empty()?id:caculateExp(symtable[presentFun.top()].scope);
 		if(id[0]=='$') ftext << "\tmove $v0, " << id << endl;
 		else ftext << "\tlw $v0, " << id << endl;
 		releaseRegister(id);
@@ -188,24 +188,24 @@ string SymbolTable::Stmt(string bkstmt){
 		cin >> n >> gram; string id = Expr();
 		cin >> n >> gram; // )
 		ftext << "\t# if stmt\n";
+		int ifScope = maxScope+1;
         while(!postorderExp.empty()) postorderExp.pop();
         inorder2postorder();
         while(!inorderExp.empty()) inorderExp.pop();
-        id = postorderExp.empty()?id:caculateExp();
+        id = postorderExp.empty()?id:caculateExp(ifScope);
 		ftext << "\t# compare zero\n";
 		string tmpReg = chooseRegister();
 		if(id[0]=='$') ftext << "\tmove " << tmpReg << ", " << id << endl;
 		else ftext << "\tlw " << tmpReg << ", " << id << endl;
-		string ifNum = to_string(maxScope+1);
-		ftext << "\tbeq " << tmpReg << ", $zero, Else" << ifNum << endl;
+		ftext << "\tbeq " << tmpReg << ", $zero, Else" << ifScope << endl;
 		releaseRegister(tmpReg);
 		releaseRegister(id);
 		cin >> n >> gram; Stmt(bkstmt);
-		ftext << "\tj EndIf" << ifNum << endl;
+		ftext << "\tj EndIf" << ifScope << endl;
 		cin >> n >> gram; // else
-		ftext << "Else" << ifNum << ":\n";
+		ftext << "Else" << ifScope << ":\n";
 		cin >> n >> gram; Stmt(bkstmt);
-		ftext << "EndIf" << ifNum << ":\n";
+		ftext << "EndIf" << ifScope << ":\n";
 	}
 	else if(gram=="while"){
 		cin >> n >> gram; // (
@@ -213,21 +213,21 @@ string SymbolTable::Stmt(string bkstmt){
 		cin >> n >> gram; // )
 		ftext << "\t# while loop\n";
 		string tmpReg = chooseRegister();
-		string whileNum = to_string(maxScope+1);
-		ftext << "While"+whileNum << ":\n";
+		int whileScope = maxScope+1;
+		ftext << "While" << whileScope << ":\n";
         while(!postorderExp.empty()) postorderExp.pop();
         inorder2postorder();
         while(!inorderExp.empty()) inorderExp.pop();
-        id = postorderExp.empty()?id:caculateExp();
+        id = postorderExp.empty()?id:caculateExp(whileScope);
 		ftext << "\t# compare zero\n";
 		if(id[0]=='$') ftext << "\tmove " << tmpReg << ", " << id << endl;
 		else ftext << "\tlw " << tmpReg << ", " << id << endl;
-		ftext << "\tbeq " << tmpReg << ", $zero, EndWhile" << whileNum << endl;
+		ftext << "\tbeq " << tmpReg << ", $zero, EndWhile" << whileScope << endl;
 		releaseRegister(tmpReg);
 		releaseRegister(id);
-		cin >> n >> gram; Stmt("EndWhile"+whileNum);
-		ftext << "\tj While"+whileNum << endl;
-		ftext << "EndWhile" << whileNum << ":\n";
+		cin >> n >> gram; Stmt("EndWhile"+to_string(whileScope));
+		ftext << "\tj While" << whileScope << endl;
+		ftext << "EndWhile" << whileScope << ":\n";
 	}
 	else if(gram=="Block"){
 		cin >> n >> gram; // {
@@ -294,7 +294,7 @@ string SymbolTable::Expr(){
         while(!postorderExp.empty()) postorderExp.pop();
 		cin >> n >> gram; string id = Expr(); 
         inorder2postorder();
-        id = caculateExp();
+        id = caculateExp(maxScope);
 		cin >> n >> gram; // )
         inorderExp = inStack.top();
         postorderExp = postStack.top();
@@ -329,6 +329,7 @@ string SymbolTable::ExprIdTail(string pre){
 		Expr2(pre);
 	}
 	else if(gram=="("){
+        presentFun.push(pre);
 		cin >> n >> gram; // ExprList
 		cin >> n >> gram; // grammar in ExprList (ExprListTail or epsilon)
 		if(gram=="ExprListTail") ExprListTail(0);
@@ -341,6 +342,7 @@ string SymbolTable::ExprIdTail(string pre){
 		string funcReg = chooseRegister();
 		ftext << "\t# move function return to funcReg\n";
 		ftext << "\tmove " << funcReg << ", $v0\n";
+        presentFun.pop();
 		cin >> n >> gram; // Expr'
 		Expr2(funcReg);
         while(!inorderExp.empty()) inorderExp.pop();
@@ -355,7 +357,7 @@ string SymbolTable::ExprIdTail(string pre){
 		inorder2postorder();
 		while(!inorderExp.empty())
 			inorderExp.pop();
-		id = postorderExp.empty() ? id : caculateExp();
+		id = postorderExp.empty() ? id : caculateExp(maxScope);
 		ftext << "\t# move to array loc\n";
 		string arrReg = chooseRegister();
 		string arLocReg = chooseRegister();

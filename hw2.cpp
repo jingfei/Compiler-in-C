@@ -22,7 +22,7 @@ int main(){
 	tree.printFollow();
 
 	freopen("grammar.txt", "r", stdin);
-	tree.findLLtable();
+    tree.findLLtable();
 	freopen("LLtable.txt","w",stdout);
 	tree.printLLtable();
 
@@ -34,6 +34,7 @@ int main(){
 	SymbolTable symboltable;
 	symboltable.findSymbolTable();
 	symboltable.printSymbolTable();
+    freopen("screen.txt", "w", stdout);
  	symboltable.genDotDataFile();
 	return 0;
 }
