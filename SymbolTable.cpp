@@ -389,7 +389,7 @@ string SymbolTable::ExprIdTail(string pre){
 		  postorderExp.pop();
 		  }
 		  ft << endl;*/
-		id = postorderExp.empty() ? id : caculateExp();
+		id = postorderExp.empty() ? id : caculateExp(symtable[pre].scope);
 		ftext << "\t# Equal\n";
 		string tmpReg = chooseRegister();
 		if(id[0]=='$') ftext << "\tmove " << tmpReg << ", " << id << endl;
@@ -449,7 +449,7 @@ int SymbolTable::priority(string item){
 	return -1;
 }
 
-string SymbolTable::caculateExp(){
+string SymbolTable::caculateExp(int scope){
     bool typeIsDouble;
 	if(!postorderExp.empty()){
 		if(postorderExp.size()<3)
@@ -475,7 +475,7 @@ string SymbolTable::caculateExp(){
 			}
 			string pre = temp.top(); temp.pop();
 			string id = temp.top(); temp.pop();
-            //typeIsDouble = typeChecking(pre, id, scope);
+            typeIsDouble = typeChecking(pre, id, scope);
 			string result = getResult(pre, isNumber(pre), id, isNumber(id), item);
 			temp.push(result);
 			postorderExp.pop();
@@ -491,15 +491,15 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 		string numReg=chooseRegister();
 		ftext << "\t# move num\n";
 		ftext << "\tli " << numReg << ", " << pre << endl;
-		releaseRegister(pre);
 		pre=numReg;
+        symtable[pre].type = isDouble(pre) ? "double" : "int";
 	}
 	if(idIsNum){
 		string idReg=chooseRegister();
 		ftext << "\t# move num\n";
 		ftext << "\tli " << idReg << ", " << id << endl;
-		releaseRegister(id);
 		id=idReg;
+        symtable[id].type = isDouble(id) ? "double" : "int";
 	}
 	string opReg1 = chooseRegister();
 	string opReg2 = chooseRegister();
@@ -594,7 +594,7 @@ void SymbolTable::ExprArrayTail(string pre){
 		while(!postorderExp.empty()) postorderExp.pop();
 		inorder2postorder();
 		while(!inorderExp.empty()) inorderExp.pop();
-		id = caculateExp();
+		id = caculateExp(symtable[pre].scope);
 		ftext << "\t# Equal\n";
 		string tmpReg = chooseRegister();
 		if(id[0]=='$') ftext << "\tmove " << tmpReg << ", " << id << endl;
@@ -662,11 +662,13 @@ string SymbolTable::chooseRegister(){
     for(int i=0; i<10; ++i)
         if(!symtable["$t"+to_string(i)].isUsed){
 			symtable["$t"+to_string(i)].isUsed=true;
+            symtable["$t"+to_string(i)].turnType=false;
             return "$t"+to_string(i);
 		}
     for(int i=7; i>=0; --i)
         if(!symtable["$s"+to_string(i)].isUsed){
 			symtable["$s"+to_string(i)].isUsed=true;
+            symtable["$t"+to_string(i)].turnType=false;
             return "$s"+to_string(i);
 		}
     return "WemyReg!"; // may cause problem

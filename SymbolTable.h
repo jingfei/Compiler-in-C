@@ -58,7 +58,7 @@ class SymbolTable{
         /* for expersion */
         void inorder2postorder();
         int priority(string);
-        string caculateExp();
+        string caculateExp(int scope = 1000);
         string getResult(string, bool, string, bool, string);
         bool isNumber(string);
         /* for type checking*/
