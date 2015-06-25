@@ -151,16 +151,12 @@ void SymbolTable::genDotDataFile(){
 string SymbolTable::Stmt(string bkstmt){
 	int n; string gram; cin >> n >> gram;
 	if(gram==";"){ 
-        while(!inorderExp.empty()) inorderExp.pop();
-        while(!postorderExp.empty()) postorderExp.pop();
 		returnType();
 		return "";
 	}
 	else if(gram=="Expr"){
 		Expr();
 		cin >> n >> gram; //;
-        while(!inorderExp.empty()) inorderExp.pop();
-        while(!postorderExp.empty()) postorderExp.pop();
 		returnType();
 	}
 	else if(gram=="return"){
@@ -198,8 +194,6 @@ string SymbolTable::Stmt(string bkstmt){
 	}
 	else if(gram=="break"){
 		cin >> n >> gram; //;
-        while(!inorderExp.empty()) inorderExp.pop();
-        while(!postorderExp.empty()) postorderExp.pop();
 		returnType();
 		ftext << "\tj " << bkstmt << endl;
 	}
@@ -286,8 +280,6 @@ string SymbolTable::Stmt(string bkstmt){
 			ftext << "\tlw $a0, " << id << endl;
 		}
 		ftext << "\tsyscall\n";
-        while(!inorderExp.empty()) inorderExp.pop();
-        while(!postorderExp.empty()) postorderExp.pop();
 		returnType();
 	}
 	return "";
@@ -515,9 +507,7 @@ string SymbolTable::ExprIdTail(string pre){
 			else ftext << "\tsw " << tmpReg << ", " << pre << endl;
 		}
 		releaseRegister(id);
-	//	releaseRegister(pre);
-		symtable[tmpReg].isUsed=false;
-		returnType();
+		releaseRegister(tmpReg);
 	}
 	return pre;
 }
@@ -854,8 +844,7 @@ void SymbolTable::ExprArrayTail(string pre){
 		}
 		releaseRegister(pre);
 		releaseRegister(id);
-		symtable[tmpReg].isUsed=false;
-		returnType();
+		releaseRegister(tmpReg);
 	}
 }
 
@@ -947,7 +936,8 @@ bool SymbolTable::typeChecking(string &a, string &b, int scope, bool isEqual){
 				string tmp = chooseRegister(true);
 				ftext << "\t# int to double (operate)\n";
 				string tmpB = chooseRegister(false);
-				if(b[0]!='$'){ ftext << "\tlw " << tmpB << ", " << b << endl; b=tmpB;}
+				if(bIsNum){ ftext << "\tli " << tmpB << ", " << b << endl; b=tmpB; }
+				else if(b[0]!='$'){ ftext << "\tlw " << tmpB << ", " << b << endl; b=tmpB;}
 				ftext << "\tmtc1 " << b << ", " << tmp << endl;
 				ftext << "\tcvt.d.w " << tmp << ", " << tmp << endl;
 				b=tmp;
@@ -958,7 +948,8 @@ bool SymbolTable::typeChecking(string &a, string &b, int scope, bool isEqual){
 				string tmp = chooseRegister(true);
 				ftext << "\t# int to double (operate)\n";
 				string tmpA = chooseRegister(false);
-				if(a[0]!='$'){ ftext << "\tlw " << tmpA << ", " << a << endl; a=tmpA;}
+				if(aIsNum){ ftext << "\tli " << tmpA << ", " << a << endl; a=tmpA; }
+				else if(a[0]!='$'){ ftext << "\tlw " << tmpA << ", " << a << endl; a=tmpA;}
 				ftext << "\tmtc1 " << a << ", " << tmp << endl;
 				ftext << "\tcvt.d.w " << tmp << ", " << tmp << endl;
 				a=tmp;
@@ -1022,6 +1013,8 @@ void SymbolTable::releaseRegister(string t){
 }
 
 void SymbolTable::returnType(){
+    while(!inorderExp.empty()) inorderExp.pop();
+    while(!postorderExp.empty()) postorderExp.pop();
     for(auto &i : vSymTable){
 		if(i->symbol[0]=='$'){
 			if(i->symbol[1]=='f'){
