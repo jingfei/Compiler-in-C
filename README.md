@@ -17,5 +17,6 @@
 
 ## usage
 
-* compile: make
-* execute: ./hw3 input_.c_file
+* download `git clone https://github.com/WemyJu/VIM-setting.git`
+* compile: `make`
+* execute: `./hw3 input_.c_file`
