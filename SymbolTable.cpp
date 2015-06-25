@@ -539,11 +539,13 @@ string SymbolTable::caculateExp(int scope){
 		        ftext << "\t# move num\n";
 				if(isDouble(postorderExp.front()))
 		        	ftext << "\tli.d " << numReg << ", " << postorderExp.front() << endl;
-				else
+                else
 		        	ftext << "\tli " << numReg << ", " << postorderExp.front() << endl;
                 symtable[numReg].type = isDouble(postorderExp.front())?"double":"int";
                 symtable[numReg].turnType = isDouble(postorderExp.front())?true:false;
                 symtable[numReg].represent = postorderExp.front();
+                cout << symtable[numReg].type<<endl;
+                cout << symtable[numReg].turnType?"o":"x";
                 return numReg;
             }
             else
