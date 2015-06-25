@@ -329,16 +329,29 @@ string SymbolTable::Expr(){
 		else if(s=="!"){
 			ftext << "\t# Not\n";
 			if(isDouble(id)){
-				if(id[0]=='$') ftext << "\tmov.d " << tmpReg << ", " << id << endl;
-				else ftext << "\tl.d " << tmpReg << ", " << id << endl;
-				ftext << "\tneg.d " << tmpReg << ", " << tmpReg << "\n";
+				string tmp = chooseRegister(false);
+				string tmpID = chooseRegister(true);
+				string realID = id;
+				ftext << "\t# double to int\n";
+				if(id[0]!='$'){ ftext << "\tl.d " << tmpID << ", " << id << endl; id=tmpID; }
+				ftext << "\tcvt.w.d " << id << ", " << id << endl;
+				ftext << "\tmfc1 " << tmp << ", " << id << endl;
+				releaseRegister(tmpID);
+				ftext << "\txori " << tmp << ", " << tmp << ", 1\n";
+				ftext << "\t# int to double\n";
+				tmpID = chooseRegister(false);
+				if(tmp[0]!='$'){ ftext << "\tlw " << tmpID << ", " << tmp << endl; tmp=tmpID;}
+				ftext << "\tmtc1 " << tmp << ", " << tmpReg << endl;
+				ftext << "\tcvt.d.w " << tmpReg << ", " << tmpReg << endl;
+				releaseRegister(tmpID);
+				id=realID;
 				if(id[0]=='$') ftext << "\tmov.d " << id << ", " << tmpReg << "\n";
 				else ftext << "\ts.d " << tmpReg << ", " << id << endl;
 			}
 			else{
 				if(id[0]=='$') ftext << "\tmove " << tmpReg << ", " << id << endl;
 				else ftext << "\tlw " << tmpReg << ", " << id << endl;
-				ftext << "\tnot " << tmpReg << ", " << tmpReg << "\n";
+				ftext << "\txori " << tmpReg << ", " << tmpReg << ", 1\n";
 				if(id[0]=='$') ftext << "\tmove " << id << ", " << tmpReg << "\n";
 				else ftext << "\tsw " << tmpReg << ", " << id << endl;
 			}
