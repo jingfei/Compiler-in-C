@@ -280,6 +280,10 @@ void SymbolTable::Stmt(string bkstmt, bool innerBlock){
 			ftext << "\tlw $a0, " << id << endl;
 		}
 		ftext << "\tsyscall\n";
+		ftext << "\t# print new line\n";
+		ftext << "\taddi $a0, $0, 0xA\n";
+		ftext << "\taddi $v0, $0, 0xB\n";
+		ftext << "\tsyscall\n";
 		returnType();
    		while(!inorderExp.empty()) inorderExp.pop();
    		while(!postorderExp.empty()) postorderExp.pop();
