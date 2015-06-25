@@ -161,11 +161,15 @@ void SymbolTable::Stmt(string bkstmt, bool innerBlock){
 	}
 	if(gram==";"){ 
 		returnType();
+   		while(!inorderExp.empty()) inorderExp.pop();
+   		while(!postorderExp.empty()) postorderExp.pop();
 	}
 	else if(gram=="Expr"){
 		Expr();
 		cin >> n >> gram; //;
 		returnType();
+   		while(!inorderExp.empty()) inorderExp.pop();
+   		while(!postorderExp.empty()) postorderExp.pop();
 	}
 	else if(gram=="return"){
 		ftext << "\t# function return $v0\n";
@@ -200,10 +204,15 @@ void SymbolTable::Stmt(string bkstmt, bool innerBlock){
 			else ftext << "\tlw $v0, " << id << endl;
 		}
 		releaseRegister(id);
+		returnType();
+   		while(!inorderExp.empty()) inorderExp.pop();
+   		while(!postorderExp.empty()) postorderExp.pop();
 	}
 	else if(gram=="break"){
 		cin >> n >> gram; //;
 		returnType();
+   		while(!inorderExp.empty()) inorderExp.pop();
+   		while(!postorderExp.empty()) postorderExp.pop();
 		ftext << "\tj " << bkstmt << endl;
 	}
 	else if(gram=="if"){
@@ -285,6 +294,8 @@ void SymbolTable::Stmt(string bkstmt, bool innerBlock){
 		}
 		ftext << "\tsyscall\n";
 		returnType();
+   		while(!inorderExp.empty()) inorderExp.pop();
+   		while(!postorderExp.empty()) postorderExp.pop();
 	}
 	if(innerBlockOut) scope.pop();
 }
@@ -1019,8 +1030,6 @@ void SymbolTable::releaseRegister(string t){
 }
 
 void SymbolTable::returnType(){
-    while(!inorderExp.empty()) inorderExp.pop();
-    while(!postorderExp.empty()) postorderExp.pop();
     for(auto &i : vSymTable){
 		if(i->symbol[0]=='$'){
 			if(i->symbol[1]=='f'){
