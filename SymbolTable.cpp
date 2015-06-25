@@ -11,11 +11,9 @@
 using namespace std;
 
 int paramNum,opNum,funcNum;
-bool innerBlock;
 
 void SymbolTable::findSymbolTable(){
 	opNum = funcNum = 0;
-	innerBlock = false;
 	ftext << ".text\n";
 	newScope("0",false);
 }
@@ -146,7 +144,7 @@ void SymbolTable::genDotDataFile(){
 	}
 }
 
-void SymbolTable::Stmt(string bkstmt){
+void SymbolTable::Stmt(string bkstmt, bool innerBlock){
 	int n; string gram; cin >> n >> gram;
 	if(gram=="Block"){
 		cin >> n >> gram; // {
@@ -234,13 +232,11 @@ void SymbolTable::Stmt(string bkstmt){
 		}
 		releaseRegister(tmpReg);
 		releaseRegister(id);
-		innerBlock=true;
-		cin >> n >> gram; Stmt(bkstmt);
+		cin >> n >> gram; Stmt(bkstmt,true);
 		ftext << "\tj EndIf" << ifScope << endl;
 		cin >> n >> gram; // else
 		ftext << "Else" << ifScope << ":\n";
-		innerBlock=true;
-		cin >> n >> gram; Stmt(bkstmt);
+		cin >> n >> gram; Stmt(bkstmt,true);
 		ftext << "EndIf" << ifScope << ":\n";
 	}
 	else if(gram=="while"){
@@ -270,8 +266,7 @@ void SymbolTable::Stmt(string bkstmt){
 		}
 		releaseRegister(tmpReg);
 		releaseRegister(id);
-		innerBlock=true;
-		cin >> n >> gram; Stmt("EndWhile"+to_string(whileScope));
+		cin >> n >> gram; Stmt("EndWhile"+to_string(whileScope),true);
 		ftext << "\tj While" << whileScope << endl;
 		ftext << "EndWhile" << whileScope << ":\n";
 	}

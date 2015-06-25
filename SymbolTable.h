@@ -55,7 +55,7 @@ class SymbolTable{
         stack<stack<string> >inStack;
         stack<queue<string> >postStack;
         /* for grammar */
-		void Stmt(string bkstmt="");
+		void Stmt(string bkstmt="", bool innerBlock=false);
 		string Expr();
 		void Expr2(string,bool isNum=false);
 		string ExprIdTail(string);
