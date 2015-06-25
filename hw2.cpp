@@ -8,9 +8,13 @@
 #include "SymbolTable.h"
 using namespace std;
 
-int main(){
+int main(int argc, char* argv[]){
+	if(argc<2){
+		cout << "Please put input c file in argv\n";
+		exit(1);
+	}
 	Tree tree;
-	freopen("main.c","r",stdin);
+	freopen(argv[1],"r",stdin);
 	tree.findLexer();
 
 	freopen("grammar.txt","r",stdin);
