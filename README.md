@@ -1,4 +1,4 @@
-#Compiler hw3 (by E84016184 jingfei)
+#Compiler hw3 (by E84016184 jingfei & H34011160 Wemy Ju)
 
 ##main file
 
