@@ -150,10 +150,18 @@ void SymbolTable::genDotDataFile(){
 
 string SymbolTable::Stmt(string bkstmt){
 	int n; string gram; cin >> n >> gram;
-	if(gram==";") return "";
+	if(gram==";"){ 
+        while(!inorderExp.empty()) inorderExp.pop();
+        while(!postorderExp.empty()) postorderExp.pop();
+		returnType();
+		return "";
+	}
 	else if(gram=="Expr"){
 		Expr();
 		cin >> n >> gram; //;
+        while(!inorderExp.empty()) inorderExp.pop();
+        while(!postorderExp.empty()) postorderExp.pop();
+		returnType();
 	}
 	else if(gram=="return"){
 		ftext << "\t# function return $v0\n";
@@ -190,6 +198,9 @@ string SymbolTable::Stmt(string bkstmt){
 	}
 	else if(gram=="break"){
 		cin >> n >> gram; //;
+        while(!inorderExp.empty()) inorderExp.pop();
+        while(!postorderExp.empty()) postorderExp.pop();
+		returnType();
 		ftext << "\tj " << bkstmt << endl;
 	}
 	else if(gram=="if"){
@@ -275,6 +286,9 @@ string SymbolTable::Stmt(string bkstmt){
 			ftext << "\tlw $a0, " << id << endl;
 		}
 		ftext << "\tsyscall\n";
+        while(!inorderExp.empty()) inorderExp.pop();
+        while(!postorderExp.empty()) postorderExp.pop();
+		returnType();
 	}
 	return "";
 }
@@ -397,7 +411,7 @@ string SymbolTable::ExprIdTail(string pre){
 		ftext << "\tjal " << pre << endl;
 		ftext << "\tmove $ra, $s" << --funcNum << endl;
 		symtable["$s"+to_string(funcNum)].isUsed=false;
-		string funcReg;
+		string funcReg=chooseRegister(symtable[pre].type=="double");
 		ftext << "\t# move function return to funcReg\n";
 		if(isDouble(pre))
 			ftext << "\tmov.d " << funcReg << ", $v0\n";
