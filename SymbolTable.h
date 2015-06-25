@@ -13,7 +13,6 @@ class SymbolTable{
 			maxScope=-1; 
 			ftext.open("main.asm", ios::out);
 			if(!ftext){cerr << "Can't open main.asm!\n"; exit(1);}
-            presentFun.push("main");
 		}
 		void findSymbolTable();
 		void printSymbolTable();
@@ -53,7 +52,6 @@ class SymbolTable{
         queue<string>postorderExp;
         stack<stack<string> >inStack;
         stack<queue<string> >postStack;
-        stack<string> presentFun;
         /* for grammar */
 		string Stmt(string bkstmt="");
 		string Expr();

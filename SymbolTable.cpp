@@ -181,7 +181,8 @@ string SymbolTable::Stmt(string bkstmt){
 		  }
 		  ft << endl;*/
         while(!inorderExp.empty()) inorderExp.pop();
-        id = postorderExp.empty()?id:caculateExp(symtable[presentFun.top()].scope);
+        id = postorderExp.empty()?id:caculateExp(scope.top().first);
+        
 		if(isDouble(id)){
 			if(id[0]=='$') ftext << "\tmov.d $v0, " << id << endl;
 			else ftext << "\tl.d $v0, " << id << endl;
@@ -358,7 +359,7 @@ string SymbolTable::Expr(){
         while(!postorderExp.empty()) postorderExp.pop();
 		cin >> n >> gram; string id = Expr(); 
         inorder2postorder();
-        id = caculateExp(maxScope);
+        id = caculateExp(scope.top().first);
 		cin >> n >> gram; // )
         inorderExp = inStack.top();
         postorderExp = postStack.top();
@@ -393,7 +394,6 @@ string SymbolTable::ExprIdTail(string pre){
 		Expr2(pre);
 	}
 	else if(gram=="("){
-        presentFun.push(pre);
 		cin >> n >> gram; // ExprList
 		cin >> n >> gram; // grammar in ExprList (ExprListTail or epsilon)
 		if(gram=="ExprListTail") ExprListTail(0);
@@ -409,7 +409,6 @@ string SymbolTable::ExprIdTail(string pre){
 			ftext << "\tmov.d " << funcReg << ", $v0\n";
 		else
 			ftext << "\tmove " << funcReg << ", $v0\n";
-        presentFun.pop();
 		cin >> n >> gram; // Expr'
 		Expr2(funcReg);
         while(!inorderExp.empty()) inorderExp.pop();
@@ -424,7 +423,7 @@ string SymbolTable::ExprIdTail(string pre){
 		inorder2postorder();
 		while(!inorderExp.empty())
 			inorderExp.pop();
-		id = postorderExp.empty() ? id : caculateExp(maxScope);
+		id = postorderExp.empty() ? id : caculateExp(scope.top().first);
 		ftext << "\t# move to array loc\n";
 		string arrReg = chooseRegister(false);
 		string arLocReg = chooseRegister(false);
@@ -467,22 +466,25 @@ string SymbolTable::ExprIdTail(string pre){
 		  postorderExp.pop();
 		  }
 		  ft << endl;*/
+//		id = postorderExp.empty() ? id : caculateExp(symtable[pre].scope);
 		if(!postorderExp.empty()){
-			if(isNumber(postorderExp.front())){
-        		typeChecking(pre, postorderExp.front(), symtable[pre].scope, true);
-				string numReg = chooseRegister(isDouble(postorderExp.front()));
-		        ftext << "\t# move num\n";
-				if(isDouble(postorderExp.front()))
-		        	ftext << "\tli.d " << numReg << ", " << postorderExp.front() << endl;
-				else
-		        	ftext << "\tli " << numReg << ", " << postorderExp.front() << endl;
-                symtable[numReg].type = isDouble(postorderExp.front())?"double":"int";
-                symtable[numReg].turnType = isDouble(postorderExp.front())?true:false;
-                symtable[numReg].represent = postorderExp.front();
-				id=numReg;
-			}
+		    if(postorderExp.size()<3){
+		    	if(isNumber(postorderExp.front())){
+            		typeChecking(pre, postorderExp.front(), symtable[pre].scope, true);
+		    		string numReg = chooseRegister(isDouble(postorderExp.front()));
+		            ftext << "\t# move num\n";
+		    		if(isDouble(postorderExp.front()))
+		            	ftext << "\tli.d " << numReg << ", " << postorderExp.front() << endl;
+		    		else
+		            	ftext << "\tli " << numReg << ", " << postorderExp.front() << endl;
+                    symtable[numReg].type = isDouble(postorderExp.front())?"double":"int";
+                    symtable[numReg].turnType = isDouble(postorderExp.front())?true:false;
+                    symtable[numReg].represent = postorderExp.front();
+		    		id=numReg;
+		    	}
+            }
 			else{
-				id = caculateExp(symtable[pre].scope);
+				id = caculateExp(scope.top().first);
 			//	ftext << id << ": " << symtable[id].represent << endl;
         		bool change = typeChecking(pre, symtable[id].represent, symtable[pre].scope, true);
 				if(change && (id[0]=='$' || id[2]=='$')){
@@ -491,7 +493,6 @@ string SymbolTable::ExprIdTail(string pre){
 			//	ftext << id << ": " << symtable[id].represent << endl;
 			}
 		}
-//		id = postorderExp.empty() ? id : caculateExp(symtable[pre].scope);
 		ftext << "\t# Equal\n";
 		string tmpReg=chooseRegister((symtable[pre].type=="double" || (pre[0]=='$' && pre[1]=='f')) );
 		if(isDouble(id)){
@@ -572,8 +573,6 @@ string SymbolTable::caculateExp(int scope){
                 symtable[numReg].type = isDouble(postorderExp.front())?"double":"int";
                 symtable[numReg].turnType = isDouble(postorderExp.front())?true:false;
                 symtable[numReg].represent = postorderExp.front();
-                cout << symtable[numReg].type<<endl;
-                cout << symtable[numReg].turnType?"o":"x";
                 return numReg;
             }
             else
@@ -828,7 +827,7 @@ void SymbolTable::ExprArrayTail(string pre){
 		  ft << endl;*/
 		while(!inorderExp.empty()) inorderExp.pop();
 		string tempPre = pre.substr(2,3);
-        id = caculateExp(symtable[tempPre].scope);
+        id = caculateExp(scope.top().first);
         typeChecking(symtable[tempPre].represent, symtable[id].represent, symtable[symtable[tempPre].represent].scope, true);
         ftext << "\t# Equal\n";
 		string tmpReg=chooseRegister((symtable[pre].type=="double" || (pre[0]=='$' && pre[1]=='f')) );
