@@ -1,9 +1,9 @@
 GXX = g++ -std=c++0x
 #GXX = g++ -std=c++0x
 
-all: Compiler.h hw2.cpp Set.o Lexer.o LLTable.o Tree.o SymbolTable.o
-	$(GXX) hw2.cpp Set.o Lexer.o LLTable.o Tree.o SymbolTable.o -o hw2
-#	g++ -Wall -g -o test hw2.cpp Set.o Lexer.o Tree.o -std=c++0x
+all: Compiler.h hw3.cpp Set.o Lexer.o LLTable.o Tree.o SymbolTable.o
+	$(GXX) hw3.cpp Set.o Lexer.o LLTable.o Tree.o SymbolTable.o -o hw3
+#	g++ -Wall -g -o test hw3.cpp Set.o Lexer.o Tree.o -std=c++0x
 
 Set.o: Set.h Set.cpp Compiler.h
 	$(GXX) -c Set.cpp
@@ -24,5 +24,5 @@ SymbolTable.o: SymbolTable.h SymbolTable.cpp
 	$(GXX) -c SymbolTable.cpp
 
 clean:
-	rm *.o hw2
+	rm *.o hw3
 

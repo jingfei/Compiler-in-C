@@ -177,21 +177,7 @@ void SymbolTable::Stmt(string bkstmt, bool innerBlock){
 		cin >> n >> gram; string id = Expr();
 		cin >> n >> gram; //;
         while(!postorderExp.empty()) postorderExp.pop();
-		/*fstream ft1;
-		  ft1.open("exp1.txt", ios::out);
-		  while(!inorderExp.empty()){
-		  ft1 << inorderExp.top() << " ";
-		  inorderExp.pop();
-		  }
-		  ft1<< endl;*/
         inorder2postorder();
-		/*fstream ft;
-		  ft.open("exp2.txt", ios::out);
-		  while(!postorderExp.empty()){
-		  ft << postorderExp.front() << " ";
-		  postorderExp.pop();
-		  }
-		  ft << endl;*/
         while(!inorderExp.empty()) inorderExp.pop();
         id = postorderExp.empty()?id:caculateExp(scope.top().first);
         
@@ -464,24 +450,7 @@ string SymbolTable::ExprIdTail(string pre){
 		cin >> n >> gram; string id = Expr();
 		while(!postorderExp.empty())
 			postorderExp.pop();
-		/*fstream ft1;
-		  ft1.open("exp1.txt", ios::out);
-		  while(!inorderExp.empty()){
-		  ft1 << inorderExp.top() << " ";
-		  inorderExp.pop();
-		  }
-		  ft1<< endl;*/
 		inorder2postorder();
-		/*while(!inorderExp.empty())
-			inorderExp.pop();
-		fstream ft;
-		  ft.open("exp2.txt", ios::out);
-		  while(!postorderExp.empty()){
-		  ft << postorderExp.front() << " ";
-		  postorderExp.pop();
-		  }
-		  ft << endl;*/
-//		id = postorderExp.empty() ? id : caculateExp(symtable[pre].scope);
 		if(!postorderExp.empty()){
 		    if(postorderExp.size()<3){
 		    	if(isNumber(postorderExp.front())){
@@ -501,7 +470,6 @@ string SymbolTable::ExprIdTail(string pre){
             }
 			else{
 				id = caculateExp(scope.top().first);
-			//	ftext << id << ": " << symtable[id].represent << endl;
         		bool change = typeChecking(pre, symtable[id].represent, symtable[pre].scope, true);
 				if(change && (id[0]=='$' || id[2]=='$')){
 					id=symtable[id].represent;
@@ -595,16 +563,12 @@ string SymbolTable::caculateExp(int scope){
             else
                 return postorderExp.front(); 
 		stack<string> temp;
-        fstream ftp3;
-        ftp3.open("exp3.txt", ios::out);
 		string item = postorderExp.front();
-        ftp3 << item <<" --out while\n";
 		while(!postorderExp.empty()){
 			while(item!="+" && item!="-" && item!="*" && item!="/" && item!="==" && item!="!=" && item!="<" && item!="<=" && item!=">" && item!=">=" && item!="&&" && item!="||"){
 				temp.push(item);
 				postorderExp.pop();
 				item = postorderExp.front();
-                ftp3 << item << " -- in while while\n";
 			}
 			string pre = temp.top(); temp.pop();
 			string id = temp.top(); temp.pop();
@@ -614,7 +578,6 @@ string SymbolTable::caculateExp(int scope){
             symtable[result].type = typeIsDouble ? "double" : "int";
 			postorderExp.pop();
             if(!postorderExp.empty()) item = postorderExp.front();
-            ftp3 << item << " -- in while\n";
 		}
         symtable[temp.top()].represent = temp.top();
 		return temp.top();
@@ -827,21 +790,7 @@ void SymbolTable::ExprArrayTail(string pre){
 	else if(gram=="="){
 		cin >> n >> gram; string id = Expr();
 		while(!postorderExp.empty()) postorderExp.pop();
-		/*fstream ft1;
-		  ft1.open("exp1.txt", ios::out);
-		  while(!inorderExp.empty()){
-		  ft1 << inorderExp.top() << " ";
-		  inorderExp.pop();
-		  }
-		  ft1<< endl;*/
 		inorder2postorder();
-		/*fstream ft;
-		  ft.open("exp2.txt", ios::out);
-		  while(!postorderExp.empty()){
-		  ft << postorderExp.front() << " ";
-		  postorderExp.pop();
-		  }
-		  ft << endl;*/
 		while(!inorderExp.empty()) inorderExp.pop();
 		string tempPre = pre.substr(2,3);
         id = caculateExp(scope.top().first);
