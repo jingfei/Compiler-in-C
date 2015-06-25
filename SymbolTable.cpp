@@ -203,6 +203,7 @@ void SymbolTable::Stmt(string bkstmt, bool innerBlock){
 			if(id[0]=='$') ftext << "\tmove $v0, " << id << endl;
 			else ftext << "\tlw $v0, " << id << endl;
 		}
+		ftext << "\tjr $ra\n";
 		releaseRegister(id);
 		returnType();
    		while(!inorderExp.empty()) inorderExp.pop();
@@ -496,6 +497,7 @@ string SymbolTable::ExprIdTail(string pre){
                     symtable[numReg].represent = postorderExp.front();
 		    		id=numReg;
 		    	}
+				else id=postorderExp.front();
             }
 			else{
 				id = caculateExp(scope.top().first);
@@ -508,7 +510,7 @@ string SymbolTable::ExprIdTail(string pre){
 			}
 		}
 		ftext << "\t# Equal\n";
-		string tmpReg=chooseRegister((symtable[pre].type=="double" || (pre[0]=='$' && pre[1]=='f')) );
+		string tmpReg=chooseRegister(isDouble(id));
 		if(isDouble(id)){
 			if(id[0]=='$') ftext << "\tmov.d " << tmpReg << ", " << id << endl;
 			else ftext << "\tl.d " << tmpReg << ", " << id << endl;
