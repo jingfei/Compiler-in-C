@@ -68,11 +68,12 @@ class SymbolTable{
         string getResult(string, bool, string, bool, string);
         bool isNumber(string);
         /* for type checking*/
-        bool typeChecking(string, string &, int);
+        bool typeChecking(string &, string &, int, bool isEqual);
         bool isDouble(string);
 		/* for temp */
         string chooseRegister(bool isdouble);
 		void releaseRegister(string);
+		void returnType();
 };
 
 #endif
