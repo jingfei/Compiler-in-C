@@ -1,8 +1,8 @@
-#Compiler hw2 (by E84016184 jingfei)
+#Compiler hw3 (by E84016184 jingfei)
 
 ##main file
 
-* hw2.cpp: use Compiler class to finish
+* hw3.cpp: all class's to finish inherit from Compiler.h, except for Symtable, it depends on tree.txt
 
 ##class files
 
@@ -11,3 +11,9 @@
 * Set: inherit from Compiler, find First and Follow set
 * LLTable: inherit from Compiler, use First & Follow set to build LLTable
 * Tree: inherit from Compiler, use LLTable to build main.c tree
+* Symtable: read file from tree.txt, analysis grammar and generate MIPS code
+
+## usage
+
+* compile: make
+* execute: ./hw3 input_.c_file
