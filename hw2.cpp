@@ -45,10 +45,9 @@ int main(int argc, char* argv[]){
 
 	//freopen("symbol_table.txt", "w", stdout);
 	freopen("tree.txt", "r", stdin);
-	SymbolTable symboltable;
+	SymbolTable symboltable(argv[1]);
 	symboltable.findSymbolTable();
 	symboltable.printSymbolTable();
-//    freopen("screen.txt", "w", stdout);
  	symboltable.genDotDataFile();
 	return 0;
 }

@@ -11,15 +11,17 @@
 using namespace std;
 
 int paramNum,opNum,funcNum;
+bool innerBlock;
 
 void SymbolTable::findSymbolTable(){
 	opNum = funcNum = 0;
+	innerBlock = false;
 	ftext << ".text\n";
 	newScope("0",false);
 }
 
 void SymbolTable::newScope(string index, bool moveStk, string bkstmt){ 
-	int n; string gram,new_index="";
+	int n; string gram;
 	stack< pair<int,string> > stk;
 	scope.push(pair<int,string>(++maxScope,index)); 
 	while(cin >> n >> gram){
@@ -27,7 +29,7 @@ void SymbolTable::newScope(string index, bool moveStk, string bkstmt){
 		while(!stk.empty() && stk.top().first>=n) stk.pop();
 		stk.push(pair<int,string>(n,gram));
 		if(gram[0]=='{'){ 
-			newScope(new_index, moveStk);
+			newScope(index, moveStk);
 		}
 		else if(gram=="Type"){ // new var (for symbol table)
 			stk.pop();
@@ -61,7 +63,6 @@ void SymbolTable::newScope(string index, bool moveStk, string bkstmt){
 			if(gram=="FunDecl"){ // func
 				symtable[index].func=true;
 				symtable[index].func_scope=maxScope+1;
-				new_index = index;
 				paramNum=0;
 				ftext << symtable[index].symbol << ":\n";
 				moveStk=true;
@@ -90,10 +91,7 @@ void SymbolTable::newScope(string index, bool moveStk, string bkstmt){
 		else if(gram=="StmtList"){
 			// read Stmt
 			cin >> n >> gram;
-			if(gram=="Stmt") new_index=(bkstmt=="" ? Stmt() : Stmt(bkstmt) );
-		}
-		if(new_index=="if" || new_index=="while"){
-			new_index += to_string(maxScope+1);
+			if(gram=="Stmt") bkstmt=="" ? Stmt() : Stmt(bkstmt) ;
 		}
 	}
 	scope.pop();
@@ -148,11 +146,23 @@ void SymbolTable::genDotDataFile(){
 	}
 }
 
-string SymbolTable::Stmt(string bkstmt){
+void SymbolTable::Stmt(string bkstmt){
 	int n; string gram; cin >> n >> gram;
+	if(gram=="Block"){
+		cin >> n >> gram; // {
+		string new_index = "Block"+to_string(maxScope+1);
+		newScope(new_index, false, bkstmt); 
+		return;
+	}
+	bool innerBlockOut=false;
+	if(innerBlock){
+		innerBlockOut=true;
+		innerBlock=false;
+		scope.push(pair<int,string>(++maxScope,"Block"+to_string(maxScope))); 
+		ftext << "max: " << maxScope << endl;
+	}
 	if(gram==";"){ 
 		returnType();
-		return "";
 	}
 	else if(gram=="Expr"){
 		Expr();
@@ -223,10 +233,12 @@ string SymbolTable::Stmt(string bkstmt){
 		}
 		releaseRegister(tmpReg);
 		releaseRegister(id);
+		innerBlock=true;
 		cin >> n >> gram; Stmt(bkstmt);
 		ftext << "\tj EndIf" << ifScope << endl;
 		cin >> n >> gram; // else
 		ftext << "Else" << ifScope << ":\n";
+		innerBlock=true;
 		cin >> n >> gram; Stmt(bkstmt);
 		ftext << "EndIf" << ifScope << ":\n";
 	}
@@ -257,14 +269,10 @@ string SymbolTable::Stmt(string bkstmt){
 		}
 		releaseRegister(tmpReg);
 		releaseRegister(id);
+		innerBlock=true;
 		cin >> n >> gram; Stmt("EndWhile"+to_string(whileScope));
 		ftext << "\tj While" << whileScope << endl;
 		ftext << "EndWhile" << whileScope << ":\n";
-	}
-	else if(gram=="Block"){
-		cin >> n >> gram; // {
-		string new_index = "Block"+to_string(maxScope+1);
-		newScope(new_index, false, bkstmt); 
 	}
 	else if(gram=="print"){
 		cin >> n >> gram;
@@ -282,7 +290,7 @@ string SymbolTable::Stmt(string bkstmt){
 		ftext << "\tsyscall\n";
 		returnType();
 	}
-	return "";
+	if(innerBlockOut) scope.pop();
 }
 
 string SymbolTable::Expr(){
@@ -508,6 +516,7 @@ string SymbolTable::ExprIdTail(string pre){
 		}
 		releaseRegister(id);
 		releaseRegister(tmpReg);
+		returnType();
 	}
 	return pre;
 }
@@ -845,6 +854,7 @@ void SymbolTable::ExprArrayTail(string pre){
 		releaseRegister(pre);
 		releaseRegister(id);
 		releaseRegister(tmpReg);
+		returnType();
 	}
 }
 

@@ -9,18 +9,21 @@ using namespace std;
 
 class SymbolTable{
 	public:
-		SymbolTable(){
+		SymbolTable(string cfile){
+			string asmfile="";
+			for(int i=0; i<cfile.length(); ++i){
+				asmfile+=cfile[i];
+				if(cfile[i]=='.'){asmfile+="asm"; break;}
+			}
 			maxScope=-1; 
-			ftext.open("main.asm", ios::out);
+			ftext.open(asmfile, ios::out);
 			if(!ftext){cerr << "Can't open main.asm!\n"; exit(1);}
             presentFun.push("main");
 		}
 		void findSymbolTable();
 		void printSymbolTable();
         void genDotDataFile();
-        ~SymbolTable(){
-            ftext.close();
-        }
+        ~SymbolTable(){ ftext.close(); }
 	private:
 		fstream ftext;
 		/* for scope */
@@ -43,9 +46,8 @@ class SymbolTable{
             bool turnType;
             bool isUsed;
             string represent;
-//			string tmpReplace;
 			/* constructor */
-			SymTable(): /*tmpReplace(""),*/turnType(false),isUsed(false),arr(false),func(false){}
+			SymTable(): turnType(false),isUsed(false),arr(false),func(false){}
 		};
 		map <string,SymTable> symtable; 
 		vector<SymTable*> vSymTable;
@@ -55,7 +57,7 @@ class SymbolTable{
         stack<queue<string> >postStack;
         stack<string> presentFun;
         /* for grammar */
-		string Stmt(string bkstmt="");
+		void Stmt(string bkstmt="");
 		string Expr();
 		void Expr2(string,bool isNum=false);
 		string ExprIdTail(string);
