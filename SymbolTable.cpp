@@ -150,10 +150,14 @@ void SymbolTable::genDotDataFile(){
 
 string SymbolTable::Stmt(string bkstmt){
 	int n; string gram; cin >> n >> gram;
-	if(gram==";") return "";
+	if(gram==";"){ 
+		returnType();
+		return "";
+	}
 	else if(gram=="Expr"){
 		Expr();
 		cin >> n >> gram; //;
+		returnType();
 	}
 	else if(gram=="return"){
 		ftext << "\t# function return $v0\n";
@@ -190,6 +194,7 @@ string SymbolTable::Stmt(string bkstmt){
 	}
 	else if(gram=="break"){
 		cin >> n >> gram; //;
+		returnType();
 		ftext << "\tj " << bkstmt << endl;
 	}
 	else if(gram=="if"){
@@ -275,6 +280,7 @@ string SymbolTable::Stmt(string bkstmt){
 			ftext << "\tlw $a0, " << id << endl;
 		}
 		ftext << "\tsyscall\n";
+		returnType();
 	}
 	return "";
 }
@@ -397,7 +403,7 @@ string SymbolTable::ExprIdTail(string pre){
 		ftext << "\tjal " << pre << endl;
 		ftext << "\tmove $ra, $s" << --funcNum << endl;
 		symtable["$s"+to_string(funcNum)].isUsed=false;
-		string funcReg;
+		string funcReg=chooseRegister(symtable[pre].type=="double");
 		ftext << "\t# move function return to funcReg\n";
 		if(isDouble(pre))
 			ftext << "\tmov.d " << funcReg << ", $v0\n";
@@ -461,10 +467,33 @@ string SymbolTable::ExprIdTail(string pre){
 		  postorderExp.pop();
 		  }
 		  ft << endl;*/
-		id = postorderExp.empty() ? id : caculateExp(symtable[pre].scope);
-        typeChecking(pre, symtable[id].represent, symtable[pre].scope);
+		if(!postorderExp.empty()){
+			if(isNumber(postorderExp.front())){
+        		typeChecking(pre, postorderExp.front(), symtable[pre].scope, true);
+				string numReg = chooseRegister(isDouble(postorderExp.front()));
+		        ftext << "\t# move num\n";
+				if(isDouble(postorderExp.front()))
+		        	ftext << "\tli.d " << numReg << ", " << postorderExp.front() << endl;
+				else
+		        	ftext << "\tli " << numReg << ", " << postorderExp.front() << endl;
+                symtable[numReg].type = isDouble(postorderExp.front())?"double":"int";
+                symtable[numReg].turnType = isDouble(postorderExp.front())?true:false;
+                symtable[numReg].represent = postorderExp.front();
+				id=numReg;
+			}
+			else{
+				id = caculateExp(symtable[pre].scope);
+			//	ftext << id << ": " << symtable[id].represent << endl;
+        		bool change = typeChecking(pre, symtable[id].represent, symtable[pre].scope, true);
+				if(change && (id[0]=='$' || id[2]=='$')){
+					id=symtable[id].represent;
+				}
+			//	ftext << id << ": " << symtable[id].represent << endl;
+			}
+		}
+//		id = postorderExp.empty() ? id : caculateExp(symtable[pre].scope);
 		ftext << "\t# Equal\n";
-		string tmpReg=chooseRegister(isDouble(id));
+		string tmpReg=chooseRegister((symtable[pre].type=="double" || (pre[0]=='$' && pre[1]=='f')) );
 		if(isDouble(id)){
 			if(id[0]=='$') ftext << "\tmov.d " << tmpReg << ", " << id << endl;
 			else ftext << "\tl.d " << tmpReg << ", " << id << endl;
@@ -478,8 +507,7 @@ string SymbolTable::ExprIdTail(string pre){
 			else ftext << "\tsw " << tmpReg << ", " << pre << endl;
 		}
 		releaseRegister(id);
-	//	releaseRegister(pre);
-		symtable[tmpReg].isUsed=false;
+		releaseRegister(tmpReg);
 	}
 	return pre;
 }
@@ -564,7 +592,7 @@ string SymbolTable::caculateExp(int scope){
 			}
 			string pre = temp.top(); temp.pop();
 			string id = temp.top(); temp.pop();
-            typeIsDouble = typeChecking(pre, id, scope);
+            typeIsDouble = typeChecking(pre, id, scope, false);
             string result = getResult(pre, isNumber(pre), id, isNumber(id), item);
             temp.push(result);
             symtable[result].type = typeIsDouble ? "double" : "int";
@@ -573,7 +601,6 @@ string SymbolTable::caculateExp(int scope){
             ftp3 << item << " -- in while\n";
 		}
         symtable[temp.top()].represent = temp.top();
-        cout << temp.top();
 		return temp.top();
 	}
 }
@@ -769,7 +796,10 @@ string SymbolTable::getResult(string pre, bool preIsNum, string id, bool idIsNum
 }
 
 bool SymbolTable::isNumber(string item){
-	if( (item[0]>='0' && item[0]<='9') || item[0]=='.') return true;
+	if( (item[0]>='0' && item[0]<='9') || item[0]=='.'){ 
+		for(int i=1; i<item.length(); ++i) if(!isdigit(item[i]) && item[i]!='.') return false;
+		return true;
+	}
 	return false;
 }
 
@@ -799,9 +829,9 @@ void SymbolTable::ExprArrayTail(string pre){
 		while(!inorderExp.empty()) inorderExp.pop();
 		string tempPre = pre.substr(2,3);
         id = caculateExp(symtable[tempPre].scope);
-        typeChecking(symtable[tempPre].represent, symtable[id].represent, symtable[symtable[tempPre].represent].scope);
+        typeChecking(symtable[tempPre].represent, symtable[id].represent, symtable[symtable[tempPre].represent].scope, true);
         ftext << "\t# Equal\n";
-		string tmpReg=chooseRegister(isDouble(id));
+		string tmpReg=chooseRegister((symtable[pre].type=="double" || (pre[0]=='$' && pre[1]=='f')) );
 		if(isDouble(id)){
 			if(id[0]=='$') ftext << "\tmov.d " << tmpReg << ", " << id << endl;
 			else ftext << "\tl.d " << tmpReg << ", " << id << endl;
@@ -816,7 +846,7 @@ void SymbolTable::ExprArrayTail(string pre){
 		}
 		releaseRegister(pre);
 		releaseRegister(id);
-		symtable[tmpReg].isUsed=false;
+		releaseRegister(tmpReg);
 	}
 }
 
@@ -841,7 +871,7 @@ void SymbolTable::ExprListTail(int i){
 	}
 }
 
-bool SymbolTable::typeChecking(string &a, string &b, int scope){
+bool SymbolTable::typeChecking(string &a, string &b, int scope, bool isEqual){
     string typeA, typeB, idA = a, idB=b;
     bool aIsNum=false, bIsNum=false;
     if(isNumber(a)){
@@ -866,31 +896,71 @@ bool SymbolTable::typeChecking(string &a, string &b, int scope){
     else typeB= symtable[b].turnType ? "double" : symtable[b].type;
     if(typeA!=typeB){
         cout << "warning (scope " << scope << ") : " << idA << " " <<  typeA << " , " << idB << " " << typeB << endl;
-        if(!aIsNum){ 
-			symtable[a].turnType = true; 
-			if(!isNumber(a) && a[0]!='$'){
-				releaseRegister(a);
-				string tmp = chooseRegister(true);
-				ftext << "\t# Int to Double\n";
-				ftext << "\tcvt.d.w " << tmp << ", " << a << endl;
-				symtable[a].tmpReplace = tmp;
-				a = tmp;
+		if(isEqual){
+			if(bIsNum){
+				if(typeB=="double"){
+					string tmp="";
+					for(int i=0; i<b.length(); ++i){if(b[i]=='.') break; tmp+=b[i];}
+					b=tmp;
+				}
+				else b+=".0";
 			}
-		}
-        if(!bIsNum){ 
-			symtable[b].turnType = true; 
-			if(!isNumber(b) && b[0]!='$'){
+			else if(typeB=="double"){
+				releaseRegister(b);
+				string tmp = chooseRegister(false);
+				ftext << "\t# double to int (equal)\n";
+				string tmpB = chooseRegister(true);
+				if(b[0]!='$'){ ftext << "\tl.d " << tmpB << ", " << b << endl; b=tmpB; }
+				ftext << "\tcvt.w.d " << b << ", " << b << endl;
+				ftext << "\tmfc1 " << tmp << ", " << b << endl;
+				b=tmp;
+				releaseRegister(tmpB);
+			}
+			else{
 				releaseRegister(b);
 				string tmp = chooseRegister(true);
-				ftext << "\t# Int to Double\n";
-				ftext << "\tcvt.d.w " << tmp << ", " << b << endl;
-				symtable[b].tmpReplace = tmp;
-				b = tmp;
+				ftext << "\t# int to double (equal)\n";
+				string tmpB = chooseRegister(false);
+				if(b[0]!='$'){ ftext << "\tlw " << tmpB << ", " << b << endl; b=tmpB;}
+				ftext << "\tmtc1 " << b << ", " << tmp << endl;
+				ftext << "\tcvt.d.w " << tmp << ", " << tmp << endl;
+				b=tmp;
+				releaseRegister(tmpB);
+			}
+			if(!bIsNum)
+				symtable[b].turnType = symtable[a].turnType;  //b turn a
+		}
+		else{
+			if(!aIsNum)	symtable[a].turnType = true; 
+			if(!bIsNum) symtable[b].turnType = true; 
+			if(typeA=="double"){ //change type b
+				releaseRegister(b);
+				string tmp = chooseRegister(true);
+				ftext << "\t# int to double (operate)\n";
+				string tmpB = chooseRegister(false);
+				if(bIsNum){ ftext << "\tli " << tmpB << ", " << b << endl; b=tmpB; }
+				else if(b[0]!='$'){ ftext << "\tlw " << tmpB << ", " << b << endl; b=tmpB;}
+				ftext << "\tmtc1 " << b << ", " << tmp << endl;
+				ftext << "\tcvt.d.w " << tmp << ", " << tmp << endl;
+				b=tmp;
+				releaseRegister(tmpB);
+			}
+			else{ //change type a
+				releaseRegister(a);
+				string tmp = chooseRegister(true);
+				ftext << "\t# int to double (operate)\n";
+				string tmpA = chooseRegister(false);
+				if(aIsNum){ ftext << "\tli " << tmpA << ", " << a << endl; a=tmpA; }
+				else if(a[0]!='$'){ ftext << "\tlw " << tmpA << ", " << a << endl; a=tmpA;}
+				ftext << "\tmtc1 " << a << ", " << tmp << endl;
+				ftext << "\tcvt.d.w " << tmp << ", " << tmp << endl;
+				a=tmp;
+				releaseRegister(tmpA);
 			}
 		}
         return true;
     }
-    if(typeA=="double" || typeB=="double") return true;
+//    if(typeA=="double" || typeB=="double") return true;
     return false;
 }
 
@@ -942,5 +1012,25 @@ void SymbolTable::releaseRegister(string t){
 			break;
 		}
 	if(tmp.length()>1) symtable[tmp].isUsed=false;
+}
+
+void SymbolTable::returnType(){
+    while(!inorderExp.empty()) inorderExp.pop();
+    while(!postorderExp.empty()) postorderExp.pop();
+    for(auto &i : vSymTable){
+		if(i->symbol[0]=='$'){
+			if(i->symbol[1]=='f'){
+				i->type="int";
+				i->turnType=false;
+			}
+			else{
+				i->type="double";
+				i->turnType=true;
+			}
+		}
+		else{
+			i->turnType=(i->type=="double");
+		}
+	}
 }
 
